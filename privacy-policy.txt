@@ -1,0 +1,25 @@
+PRIVACY POLICY
+Bibliophile Concierge
+Last updated: May 2026
+
+This application collects only the minimum data necessary for it to function properly. 
+Specifically, this includes book titles, author names, and contact information 
+(such as phone numbers or usernames) that users voluntarily provide when using the system.
+
+This application does not sell, rent, share, or disclose any user data to third parties 
+for marketing or commercial purposes.
+
+Data collected is used solely to:
+- Process and store book records in the library system
+- Send automated reminders and notifications to the user
+- Generate AI-based summaries and genre classifications
+
+All data is stored securely and is accessible only to the application owner and 
+authorized group members.
+
+Users may request deletion of their data at any time by contacting the application owner.
+
+This application complies with applicable data protection principles, including data 
+minimization and purpose limitation.
+
+Contact: bibliophile.concierge@gmail.com

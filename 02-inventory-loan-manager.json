@@ -1,0 +1,296 @@
+{
+  "name": "Bibliophile Concierge - Member 2: Inventory & Loan Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "📤 Issue / Return a Book",
+        "formDescription": "Lend a book to a friend or mark it as returned.",
+        "formFields": {
+          "values": [
+            { "fieldLabel": "Book Title", "fieldType": "text", "requiredField": true },
+            { "fieldLabel": "Action", "fieldType": "dropdown", "fieldOptions": { "values": [ {"option": "Issue"}, {"option": "Return"} ] }, "requiredField": true },
+            { "fieldLabel": "Friend's Name", "fieldType": "text" },
+            { "fieldLabel": "Friend's WhatsApp / Telegram", "fieldType": "text" },
+            { "fieldLabel": "Return Due Date", "fieldType": "date" }
+          ]
+        },
+        "options": {
+          "customCss": "body { background:#fef6e4; font-family:Georgia, serif; } h1{color:#6b4226;} button{background:#7a9e7e !important;border-radius:999px !important;}"
+        }
+      },
+      "id": "loan-form",
+      "name": "📋 Loan Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [220, 320],
+      "webhookId": "bibliophile-loan"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "table": { "__rl": true, "value": "Books", "mode": "name" },
+        "filterByFormula": "={LOWER({Title})} = LOWER(\"{{ $json['Book Title'] }}\")",
+        "options": {}
+      },
+      "id": "find-book",
+      "name": "🔎 Find Book in Vault",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [460, 320]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            { "conditions": { "options": { "caseSensitive": false }, "combinator": "and", "conditions": [ { "leftValue": "={{ $('📋 Loan Form').item.json.Action }}", "rightValue": "Issue", "operator": { "type": "string", "operation": "equals" } } ] }, "renameOutput": true, "outputKey": "Issue" },
+            { "conditions": { "options": { "caseSensitive": false }, "combinator": "and", "conditions": [ { "leftValue": "={{ $('📋 Loan Form').item.json.Action }}", "rightValue": "Return", "operator": { "type": "string", "operation": "equals" } } ] }, "renameOutput": true, "outputKey": "Return" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "switch-action",
+      "name": "🔀 Issue or Return?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [700, 320]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "table": { "__rl": true, "value": "Books", "mode": "name" },
+        "id": "={{ $('🔎 Find Book in Vault').item.json.id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Issued",
+            "Lent To": "={{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
+            "Due Date": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}"
+          }
+        }
+      },
+      "id": "mark-issued",
+      "name": "📕 Mark as Issued",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [940, 200]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "table": { "__rl": true, "value": "Books", "mode": "name" },
+        "id": "={{ $('🔎 Find Book in Vault').item.json.id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Available",
+            "Lent To": "",
+            "Due Date": ""
+          }
+        }
+      },
+      "id": "mark-returned",
+      "name": "📗 Mark as Returned",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [940, 440]
+    },
+    {
+      "parameters": {
+        "calendar": { "__rl": true, "value": "primary", "mode": "list" },
+        "start": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}T09:00:00",
+        "end": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}T10:00:00",
+        "additionalFields": {
+          "summary": "=📖 Return: {{ $('📋 Loan Form').item.json['Book Title'] }} from {{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
+          "description": "=Lent on {{ $now.format('yyyy-MM-dd') }}. Friend contact: {{ $('📋 Loan Form').item.json[\"Friend's WhatsApp / Telegram\"] }}"
+        }
+      },
+      "id": "gcal",
+      "name": "📅 Google Calendar Reminder",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [1180, 120]
+    },
+    {
+      "parameters": {
+        "task": "=Return \"{{ $('📋 Loan Form').item.json['Book Title'] }}\" from {{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
+        "additionalFields": {
+          "dueDate": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}",
+          "priority": 3
+        }
+      },
+      "id": "todoist",
+      "name": "✅ Todoist Reminder",
+      "type": "n8n-nodes-base.todoist",
+      "typeVersion": 2.1,
+      "position": [1180, 280]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": { "__rl": true, "value": "={{ $vars.GOOGLE_SHEETS_BACKUP_ID }}", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Loans", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('📋 Loan Form').item.json['Book Title'] }}",
+            "Friend": "={{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
+            "Due": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}",
+            "Status": "Issued"
+          }
+        }
+      },
+      "id": "sheets-loan-log",
+      "name": "📒 Google Sheets Loan Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1180, 440]
+    },
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }] }
+      },
+      "id": "daily-cron",
+      "name": "⏰ Daily 9AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 760]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "={{ $vars.OWNER_CITY }}" },
+            { "name": "appid", "value": "={{ $vars.OPENWEATHER_API_KEY }}" },
+            { "name": "units", "value": "metric" }
+          ]
+        }
+      },
+      "id": "weather",
+      "name": "🌤️ Check Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 760]
+    },
+    {
+      "parameters": {
+        "jsCode": "const w = $input.first().json.weather?.[0]?.main || 'Clear';\nconst map = {\n  Rain:'Poetry', Drizzle:'Poetry', Clouds:'Poetry',\n  Clear:'Adventure', Sunny:'Adventure',\n  Snow:'Children', Thunderstorm:'Religion', Mist:'Biography'\n};\nconst genre = map[w] || 'Novels';\nreturn [{ json: { weather: w, suggestedGenre: genre } }];"
+      },
+      "id": "weather-map",
+      "name": "🍃 Weather → Genre",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 760]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "table": { "__rl": true, "value": "Books", "mode": "name" },
+        "filterByFormula": "=AND({Genre}=\"{{ $json.suggestedGenre }}\", {Status}=\"Available\")",
+        "options": { "limit": 1 }
+      },
+      "id": "pick-book",
+      "name": "🌸 Pick a Book for Today",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [940, 760]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $vars.OWNER_TELEGRAM_CHAT_ID }}",
+        "text": "=🌧️ Today is a *{{ $('🍃 Weather → Genre').item.json.suggestedGenre }} Day* ({{ $('🍃 Weather → Genre').item.json.weather }})\n\n📖 Suggestion from your shelf:\n*{{ $json.fields.Title }}* — {{ $json.fields.Author }}\n\n🌱 Plant Spirit: {{ $json.fields['Plant Spirit'] }}\n\n_Water your mind today._",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-suggest",
+      "name": "✈️ Telegram Daily Suggestion",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1180, 760]
+    },
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 10 * * *" }] }
+      },
+      "id": "overdue-cron",
+      "name": "⏰ Daily Overdue Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 1000]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "table": { "__rl": true, "value": "Books", "mode": "name" },
+        "filterByFormula": "=AND({Status}=\"Issued\", IS_BEFORE({Due Date}, TODAY()))",
+        "options": {}
+      },
+      "id": "find-overdue",
+      "name": "⚠️ Find Overdue Books",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [460, 1000]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $vars.OWNER_DISCORD_WEBHOOK_USERID || '0' }}",
+        "text": "=📚 Friendly nudge: *{{ $json.fields.Title }}* was due on {{ $json.fields['Due Date'] }}. Lent to {{ $json.fields['Lent To'] }}.\n\nPlease return when you can — thank you! 🌷",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-nudge",
+      "name": "📨 Telegram Nudge to Friend",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [700, 920]
+    },
+    {
+      "parameters": {
+        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"content\": \"📚 Library reminder: **{{ $json.fields.Title }}** is overdue (due {{ $json.fields['Due Date'] }}). Lent to {{ $json.fields['Lent To'] }}.\" }"
+      },
+      "id": "discord-ping",
+      "name": "💬 Discord Self-Ping",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 1080]
+    }
+  ],
+  "connections": {
+    "📋 Loan Form": { "main": [[{ "node": "🔎 Find Book in Vault", "type": "main", "index": 0 }]] },
+    "🔎 Find Book in Vault": { "main": [[{ "node": "🔀 Issue or Return?", "type": "main", "index": 0 }]] },
+    "🔀 Issue or Return?": {
+      "main": [
+        [{ "node": "📕 Mark as Issued", "type": "main", "index": 0 }],
+        [{ "node": "📗 Mark as Returned", "type": "main", "index": 0 }]
+      ]
+    },
+    "📕 Mark as Issued": {
+      "main": [[
+        { "node": "📅 Google Calendar Reminder", "type": "main", "index": 0 },
+        { "node": "✅ Todoist Reminder", "type": "main", "index": 0 },
+        { "node": "📒 Google Sheets Loan Log", "type": "main", "index": 0 }
+      ]]
+    },
+    "⏰ Daily 9AM Trigger": { "main": [[{ "node": "🌤️ Check Weather", "type": "main", "index": 0 }]] },
+    "🌤️ Check Weather": { "main": [[{ "node": "🍃 Weather → Genre", "type": "main", "index": 0 }]] },
+    "🍃 Weather → Genre": { "main": [[{ "node": "🌸 Pick a Book for Today", "type": "main", "index": 0 }]] },
+    "🌸 Pick a Book for Today": { "main": [[{ "node": "✈️ Telegram Daily Suggestion", "type": "main", "index": 0 }]] },
+    "⏰ Daily Overdue Check": { "main": [[{ "node": "⚠️ Find Overdue Books", "type": "main", "index": 0 }]] },
+    "⚠️ Find Overdue Books": {
+      "main": [[
+        { "node": "📨 Telegram Nudge to Friend", "type": "main", "index": 0 },
+        { "node": "💬 Discord Self-Ping", "type": "main", "index": 0 }
+      ]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "tags": [{ "name": "bibliophile" }, { "name": "member-2" }]
+}

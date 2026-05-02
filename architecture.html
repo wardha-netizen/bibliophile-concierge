@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Bibliophile Concierge — Architecture</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Georgia', serif;
+    background: linear-gradient(135deg, #fef6e4 0%, #f3d2c1 100%);
+    color: #4a2f1a;
+    padding: 32px 24px;
+  }
+  h1 { text-align: center; font-size: 32px; margin: 0 0 4px; color: #6b4226; }
+  .sub { text-align: center; color: #8a6a4d; margin-bottom: 28px; font-style: italic; }
+
+  .legend {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 16px;
+    margin-bottom: 28px;
+  }
+  .legend span {
+    background: #fffaf0; padding: 6px 14px; border-radius: 999px;
+    border: 1px solid #d4a373; font-size: 13px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+  .member {
+    background: #fffaf0;
+    border: 2px solid #d4a373;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(120,80,40,0.12);
+  }
+  .member h2 { margin-top: 0; color: #6b4226; font-size: 20px; border-bottom: 2px dashed #d4a373; padding-bottom: 8px; }
+  .member .role { font-size: 13px; color: #8a6a4d; font-style: italic; margin-bottom: 14px; }
+
+  .flow { display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: flex; align-items: center; gap: 10px;
+    background: #fef6e4; border-left: 4px solid #7a9e7e;
+    padding: 10px 12px; border-radius: 8px; font-size: 13px;
+  }
+  .step.trigger { border-left-color: #e76f51; }
+  .step.ai { border-left-color: #b08968; }
+  .step.notify { border-left-color: #7a9e7e; }
+  .step.store { border-left-color: #4a7c59; }
+  .step.fetch { border-left-color: #d4a373; }
+
+  .icon { font-size: 18px; width: 24px; text-align: center; }
+  .label { flex: 1; }
+  .app { font-weight: bold; color: #6b4226; }
+  .desc { display: block; font-size: 11px; color: #8a6a4d; margin-top: 2px; }
+
+  .arrow { text-align: center; color: #d4a373; font-size: 16px; margin: -2px 0; }
+
+  .apps-bar {
+    margin-top: 32px; padding: 20px; background: #fffaf0;
+    border: 2px dashed #d4a373; border-radius: 16px;
+    max-width: 1500px; margin-left: auto; margin-right: auto;
+  }
+  .apps-bar h3 { margin: 0 0 12px; color: #6b4226; text-align: center; }
+  .apps {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+  }
+  .app-chip {
+    background: #fef6e4; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid #d4a373; font-size: 12px;
+  }
+  footer { text-align: center; margin-top: 24px; color: #8a6a4d; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>🌿 Bibliophile Concierge — Architecture 🌿</h1>
+<p class="sub">A 24-app, 3-workflow library system in n8n · "Tangled" cartoon-garden theme</p>
+
+<div class="legend">
+  <span style="border-left:4px solid #e76f51">🔴 Trigger (start)</span>
+  <span style="border-left:4px solid #d4a373">🟠 Fetch / lookup</span>
+  <span style="border-left:4px solid #b08968">🟤 AI brain (Groq)</span>
+  <span style="border-left:4px solid #4a7c59">🟢 Store / log</span>
+  <span style="border-left:4px solid #7a9e7e">💬 Notify / post</span>
+</div>
+
+<div class="grid">
+
+  <!-- MEMBER 1 -->
+  <div class="member">
+    <h2>📖 Member 1 — Acquisition & Multi-Lingual Librarian</h2>
+    <div class="role">Brings new books in, detects language, applies the cartoon "plant spirit" theme.</div>
+    <div class="flow">
+      <div class="step trigger"><span class="icon">📝</span><span class="label"><span class="app">n8n Form</span><span class="desc">User submits book title (any language)</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step fetch"><span class="icon">📚</span><span class="label"><span class="app">Google Books + Open Library</span><span class="desc">Look up author, ISBN, summary (parallel)</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step fetch"><span class="icon">🌐</span><span class="label"><span class="app">Google Translate</span><span class="desc">Detect language of title</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM (free)</span><span class="desc">Genre + Plant Spirit + price estimate</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step fetch"><span class="icon">🎨</span><span class="label"><span class="app">Unsplash → Cloudinary</span><span class="desc">Cartoon cover image, hosted</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step store"><span class="icon">🌱</span><span class="label"><span class="app">Airtable + Google Sheets</span><span class="desc">Primary vault + backup row</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step notify"><span class="icon">💬</span><span class="label"><span class="app">WhatsApp</span><span class="desc">"Planting Confirmation" message</span></span></div>
+    </div>
+  </div>
+
+  <!-- MEMBER 2 -->
+  <div class="member">
+    <h2>📚 Member 2 — Inventory & Loan Manager</h2>
+    <div class="role">Tracks who has which book, weather-based suggestions, overdue nudges.</div>
+
+    <div class="flow">
+      <div class="step trigger"><span class="icon">📝</span><span class="label"><span class="app">n8n Loan Form</span><span class="desc">Issue or Return a book</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step store"><span class="icon">🔎</span><span class="label"><span class="app">Airtable</span><span class="desc">Update Status: Issued / Available</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step notify"><span class="icon">📅</span><span class="label"><span class="app">Google Calendar + Todoist</span><span class="desc">Return-date reminder</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step store"><span class="icon">📒</span><span class="label"><span class="app">Google Sheets</span><span class="desc">Loan log (backup)</span></span></div>
+    </div>
+
+    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
+
+    <div class="flow">
+      <div class="step trigger"><span class="icon">⏰</span><span class="label"><span class="app">Daily 9 AM cron</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step fetch"><span class="icon">🌤️</span><span class="label"><span class="app">OpenWeatherMap</span><span class="desc">Cloudy = Poetry day, Sunny = Adventure...</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step notify"><span class="icon">✈️</span><span class="label"><span class="app">Telegram</span><span class="desc">"Today's suggestion from your Poetry shelf"</span></span></div>
+    </div>
+
+    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
+
+    <div class="flow">
+      <div class="step trigger"><span class="icon">⏰</span><span class="label"><span class="app">Daily overdue check</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step notify"><span class="icon">📨</span><span class="label"><span class="app">Telegram (friend) + Discord (you)</span><span class="desc">Polite nudges</span></span></div>
+    </div>
+  </div>
+
+  <!-- MEMBER 3 -->
+  <div class="member">
+    <h2>✨ Member 3 — Engagement & Semantic Search</h2>
+    <div class="role">Daily motivation, "search inside" books, social archiving.</div>
+
+    <div class="flow">
+      <div class="step trigger"><span class="icon">🌅</span><span class="label"><span class="app">Daily 8 AM cron</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM</span><span class="desc">Quote + unique code</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step notify"><span class="icon">📧</span><span class="label"><span class="app">Gmail + Telegram</span><span class="desc">"Water Your Mind" message</span></span></div>
+    </div>
+
+    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
+
+    <div class="flow">
+      <div class="step trigger"><span class="icon">🔍</span><span class="label"><span class="app">Telegram bot message</span><span class="desc">User types a quote or character</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step fetch"><span class="icon">📁</span><span class="label"><span class="app">Airtable Notes + Google Drive PDFs</span><span class="desc">Parallel search</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM</span><span class="desc">Summarize matches</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step notify"><span class="icon">✈️</span><span class="label"><span class="app">Telegram reply</span></span></div>
+    </div>
+
+    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
+
+    <div class="flow">
+      <div class="step trigger"><span class="icon">🌙</span><span class="label"><span class="app">Evening cron</span><span class="desc">Find books marked "Completed"</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM</span><span class="desc">Generate captions / summary / tags</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step notify"><span class="icon">🌐</span><span class="label"><span class="app">Instagram · LinkedIn · GitHub · Pinterest · YouTube · Spotify</span><span class="desc">Multi-channel archive</span></span></div>
+      <div class="arrow">↓</div>
+      <div class="step store"><span class="icon">📦</span><span class="label"><span class="app">Dropbox + Microsoft Excel</span><span class="desc">Backup &amp; report log</span></span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="apps-bar">
+  <h3>🪴 All 24 Apps Used (teacher's checklist) 🪴</h3>
+  <div class="apps">
+    <span class="app-chip">1. n8n Forms</span>
+    <span class="app-chip">2. Airtable</span>
+    <span class="app-chip">3. Google Sheets</span>
+    <span class="app-chip">4. Google Books</span>
+    <span class="app-chip">5. Open Library</span>
+    <span class="app-chip">6. OpenAI (Groq)</span>
+    <span class="app-chip">7. Google Translate</span>
+    <span class="app-chip">8. WhatsApp</span>
+    <span class="app-chip">9. Telegram</span>
+    <span class="app-chip">10. Gmail</span>
+    <span class="app-chip">11. Google Drive</span>
+    <span class="app-chip">12. Dropbox</span>
+    <span class="app-chip">13. Cloudinary</span>
+    <span class="app-chip">14. Unsplash</span>
+    <span class="app-chip">15. Todoist</span>
+    <span class="app-chip">16. Google Calendar</span>
+    <span class="app-chip">17. Spotify</span>
+    <span class="app-chip">18. YouTube</span>
+    <span class="app-chip">19. Instagram</span>
+    <span class="app-chip">20. LinkedIn</span>
+    <span class="app-chip">21. Pinterest</span>
+    <span class="app-chip">22. Discord</span>
+    <span class="app-chip">23. GitHub</span>
+    <span class="app-chip">24. OpenWeatherMap</span>
+    <span class="app-chip">+ Microsoft Excel</span>
+  </div>
+</div>
+
+<footer>
+  Built for n8n self-hosted (free) · LLM via Groq (free) · All other services on free tiers.
+</footer>
+
+</body>
+</html>
