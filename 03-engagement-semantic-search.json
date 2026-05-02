@@ -197,6 +197,7 @@
     },
     {
       "parameters": {
+        "resource": "file",
         "operation": "create",
         "owner": "wardha-netizen",
         "repository": "bibliophile-concierge",
