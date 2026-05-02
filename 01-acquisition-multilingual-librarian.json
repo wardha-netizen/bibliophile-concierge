@@ -3,30 +3,17 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "🌿 Bibliophile Concierge - Plant a New Book 🌿",
-        "formDescription": "Add a book to your enchanted library garden. Title can be in English, Urdu, Arabic, or any language.",
+        "formTitle": "🌿 Plant a New Book",
+        "formDescription": "Add a book to your library. Title can be in English, Urdu, or Arabic.",
         "formFields": {
           "values": [
             { "fieldLabel": "Book Title", "fieldType": "text", "requiredField": true },
             { "fieldLabel": "Author (optional)", "fieldType": "text" },
             { "fieldLabel": "Notes / Quote you loved", "fieldType": "textarea" },
-            {
-              "fieldLabel": "Owner / Shelf",
-              "fieldType": "dropdown",
-              "fieldOptions": {
-                "values": [
-                  { "option": "Main Garden" },
-                  { "option": "Member 1" },
-                  { "option": "Member 2" },
-                  { "option": "Member 3" }
-                ]
-              }
-            }
+            { "fieldLabel": "Owner / Shelf", "fieldType": "dropdown", "fieldOptions": { "values": [ {"option":"Main Garden"}, {"option":"Member 1"}, {"option":"Member 2"}, {"option":"Member 3"} ] } }
           ]
         },
-        "options": {
-          "customCss": "body { background: linear-gradient(135deg,#fef6e4,#f3d2c1); font-family: 'Georgia', serif; } .form-container { background: #fffaf0; border: 2px solid #d4a373; border-radius: 16px; box-shadow: 0 8px 24px rgba(120,80,40,0.15); } h1 { color: #6b4226; } button { background:#7a9e7e !important; border-radius:999px !important; }"
-        }
+        "options": { "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:Georgia,serif;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:16px;}h1{color:#6b4226;}button{background:#7a9e7e !important;border-radius:999px !important;}" }
       },
       "id": "form-trigger",
       "name": "📖 Book Intake Form",
@@ -37,46 +24,34 @@
     },
     {
       "parameters": {
-        "url": "=https://www.googleapis.com/books/v1/volumes",
+        "url": "https://www.googleapis.com/books/v1/volumes",
         "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            { "name": "q", "value": "={{ $json['Book Title'] }}" },
-            { "name": "maxResults", "value": "1" }
-          ]
-        },
+        "queryParameters": { "parameters": [ { "name": "q", "value": "={{ $json['Book Title'] }}" }, { "name": "maxResults", "value": "1" } ] },
         "options": {}
       },
       "id": "google-books",
       "name": "📚 Google Books Lookup",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 200]
+      "position": [480, 200],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "url": "=https://openlibrary.org/search.json",
+        "url": "https://openlibrary.org/search.json",
         "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            { "name": "title", "value": "={{ $('📖 Book Intake Form').item.json['Book Title'] }}" },
-            { "name": "limit", "value": "1" }
-          ]
-        },
+        "queryParameters": { "parameters": [ { "name": "title", "value": "={{ $('📖 Book Intake Form').item.json['Book Title'] }}" }, { "name": "limit", "value": "1" } ] },
         "options": {}
       },
       "id": "open-library",
       "name": "🏛️ Open Library Lookup",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 400]
+      "position": [480, 420],
+      "onError": "continueRegularOutput"
     },
     {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineByPosition",
-        "options": {}
-      },
+      "parameters": { "mode": "combine", "combineBy": "combineByPosition", "options": {} },
       "id": "merge-sources",
       "name": "🔗 Merge Book Sources",
       "type": "n8n-nodes-base.merge",
@@ -85,52 +60,38 @@
     },
     {
       "parameters": {
-        "jsCode": "// Extract cover from Google Books (already fetched — free, no API key)\nconst gbItem = $input.first().json;\nconst olItem = $input.last().json;\n\n// Google Books thumbnail (upgrade http to https)\nlet coverUrl = gbItem?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || '';\nif (coverUrl) {\n  coverUrl = coverUrl.replace('http://', 'https://');\n}\n\n// Fallback: Open Library cover by ISBN\nif (!coverUrl) {\n  const isbn = olItem?.docs?.[0]?.isbn?.[0];\n  if (isbn) coverUrl = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;\n}\n\n// Final fallback: generic placeholder\nif (!coverUrl) {\n  coverUrl = 'https://covers.openlibrary.org/b/id/8739161-L.jpg';\n}\n\nreturn [{ json: { coverUrl } }];"
+        "jsCode": "const gb = $input.first().json;\nconst ol = $input.last().json;\nlet cover = gb?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || '';\nif (cover) cover = cover.replace('http://', 'https://');\nif (!cover) {\n  const isbn = ol?.docs?.[0]?.isbn?.[0];\n  if (isbn) cover = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;\n}\nif (!cover) cover = 'https://covers.openlibrary.org/b/id/8739161-L.jpg';\nreturn [{ json: { coverUrl: cover } }];"
       },
       "id": "extract-cover",
-      "name": "🖼️ Extract Cover URL",
+      "name": "🖼️ Extract Cover (Free)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [960, 200]
     },
     {
       "parameters": {
-        "url": "https://translation.googleapis.com/language/translate/v2/detect",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            { "name": "key", "value": "={{ $vars.GOOGLE_TRANSLATE_API_KEY }}" },
-            { "name": "q", "value": "={{ $('📖 Book Intake Form').item.json['Book Title'] }}" }
-          ]
-        },
-        "options": {}
+        "jsCode": "const title = $('📖 Book Intake Form').item.json['Book Title'] || '';\nlet lang = 'English';\nif (/[\\u0600-\\u06FF]/.test(title)) lang = 'Arabic/Urdu';\nelse if (/[\\u4e00-\\u9fff]/.test(title)) lang = 'Chinese';\nelse if (/[\\u0900-\\u097F]/.test(title)) lang = 'Hindi';\nelse if (/[а-яА-Я]/.test(title)) lang = 'Russian';\nreturn [{ json: { detectedLanguage: lang } }];"
       },
-      "id": "translate-detect",
-      "name": "🌐 Detect Language",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [960, 400]
+      "id": "detect-lang",
+      "name": "🌐 Detect Language (Free)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 420]
     },
     {
       "parameters": {
         "model": "llama-3.3-70b-versatile",
         "messages": {
           "values": [
-            {
-              "role": "system",
-              "content": "You are a librarian. Given a book title and author, return STRICT JSON with keys: genre (one of Novels, Poetry, Education, Religion, Biography, Science, Children, Other), plant_spirit (a flower/plant that matches the genre — Poetry=Lily, Novels=Rose, Education=Oak, Religion=Lotus, Biography=Sunflower, Science=Fern, Children=Daisy, Other=Ivy), one_line_summary, estimated_price_usd (number), mood_tag (one of cozy, adventurous, melancholic, intellectual, spiritual, playful)."
-            },
-            {
-              "role": "user",
-              "content": "=Title: {{ $('📖 Book Intake Form').item.json['Book Title'] }}\nAuthor: {{ $('📖 Book Intake Form').item.json['Author (optional)'] || 'unknown' }}\nGoogle Books info: {{ JSON.stringify($('📚 Google Books Lookup').item.json.items?.[0]?.volumeInfo || {}) }}"
-            }
+            { "role": "system", "content": "You are a librarian. Return STRICT JSON: { genre (Novels/Poetry/Education/Religion/Biography/Science/Children/Other), plant_spirit (flower matching genre: Poetry=Lily, Novels=Rose, Education=Oak, Religion=Lotus, Biography=Sunflower, Science=Fern, Children=Daisy, Other=Ivy), one_line_summary, estimated_price_usd (number), mood_tag (cozy/adventurous/melancholic/intellectual/spiritual/playful) }" },
+            { "role": "user", "content": "=Title: {{ $('📖 Book Intake Form').item.json['Book Title'] }}\nAuthor: {{ $('📖 Book Intake Form').item.json['Author (optional)'] || 'unknown' }}\nInfo: {{ JSON.stringify($('📚 Google Books Lookup').item.json.items?.[0]?.volumeInfo || {}) }}" }
           ]
         },
         "jsonOutput": true,
         "options": {}
       },
-      "id": "openai-classify",
-      "name": "🤖 AI: Genre + Plant Spirit (Groq compatible)",
+      "id": "ai-classify",
+      "name": "🤖 AI: Genre + Plant Spirit",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [1200, 300]
@@ -145,13 +106,13 @@
           "value": {
             "Title":        "={{ $('📖 Book Intake Form').item.json['Book Title'] }}",
             "Author":       "={{ $('📖 Book Intake Form').item.json['Author (optional)'] }}",
-            "Language":     "={{ $('🌐 Detect Language').item.json.data.detections[0][0].language }}",
-            "Genre":        "={{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.genre }}",
-            "Plant Spirit": "={{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.plant_spirit }}",
-            "Summary":      "={{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.one_line_summary }}",
-            "Price (USD)":  "={{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.estimated_price_usd }}",
+            "Language":     "={{ $('🌐 Detect Language (Free)').item.json.detectedLanguage }}",
+            "Genre":        "={{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.genre }}",
+            "Plant Spirit": "={{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.plant_spirit }}",
+            "Summary":      "={{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.one_line_summary }}",
+            "Price (USD)":  "={{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.estimated_price_usd }}",
             "Status":       "Available",
-            "Cover URL":    "={{ $('🖼️ Extract Cover URL').item.json.coverUrl }}",
+            "Cover URL":    "={{ $('🖼️ Extract Cover (Free)').item.json.coverUrl }}",
             "Owner":        "={{ $('📖 Book Intake Form').item.json['Owner / Shelf'] }}",
             "Notes":        "={{ $('📖 Book Intake Form').item.json['Notes / Quote you loved'] }}"
           }
@@ -168,7 +129,17 @@
         "operation": "append",
         "documentId": { "__rl": true, "value": "={{ $vars.GOOGLE_SHEETS_BACKUP_ID }}", "mode": "id" },
         "sheetName": { "__rl": true, "value": "Books", "mode": "name" },
-        "columns": { "mappingMode": "autoMapInputData", "value": {} }
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title":    "={{ $('📖 Book Intake Form').item.json['Book Title'] }}",
+            "Author":   "={{ $('📖 Book Intake Form').item.json['Author (optional)'] }}",
+            "Genre":    "={{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.genre }}",
+            "Language": "={{ $('🌐 Detect Language (Free)').item.json.detectedLanguage }}",
+            "Status":   "Available",
+            "Owner":    "={{ $('📖 Book Intake Form').item.json['Owner / Shelf'] }}"
+          }
+        }
       },
       "id": "sheets-backup",
       "name": "📒 Backup to Google Sheets",
@@ -181,39 +152,26 @@
         "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌿 Planting Confirmation\",\n    \"description\": \"📖 **{{ $('📖 Book Intake Form').item.json['Book Title'] }}** has been planted in the library garden!\",\n    \"color\": 7893879,\n    \"thumbnail\": { \"url\": \"{{ $('🖼️ Extract Cover URL').item.json.coverUrl }}\" },\n    \"fields\": [\n      { \"name\": \"🌸 Plant Spirit\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.plant_spirit }}\", \"inline\": true },\n      { \"name\": \"📚 Genre\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.genre }}\", \"inline\": true },\n      { \"name\": \"🌐 Language\", \"value\": \"{{ $('🌐 Detect Language').item.json.data.detections[0][0].language }}\", \"inline\": true },\n      { \"name\": \"💰 Est. Value\", \"value\": \"${{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.estimated_price_usd }}\", \"inline\": true }\n    ],\n    \"footer\": { \"text\": \"May it bloom in your library garden 🌷\" }\n  }]\n}"
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌿 New Book Planted!\",\n    \"description\": \"**{{ $('📖 Book Intake Form').item.json['Book Title'] }}** has been added to the library!\",\n    \"color\": 7893879,\n    \"thumbnail\": { \"url\": \"{{ $('🖼️ Extract Cover (Free)').item.json.coverUrl }}\" },\n    \"fields\": [\n      { \"name\": \"📚 Genre\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.genre }}\", \"inline\": true },\n      { \"name\": \"🌸 Plant Spirit\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.plant_spirit }}\", \"inline\": true },\n      { \"name\": \"🌐 Language\", \"value\": \"{{ $('🌐 Detect Language (Free)').item.json.detectedLanguage }}\", \"inline\": true },\n      { \"name\": \"💰 Est. Value\", \"value\": \"${{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.estimated_price_usd }}\", \"inline\": true },\n      { \"name\": \"📝 Summary\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.one_line_summary }}\" }\n    ],\n    \"footer\": { \"text\": \"May it bloom in your library garden 🌷\" }\n  }]\n}",
+        "options": {}
       },
       "id": "discord-confirm",
       "name": "💬 Discord Planting Confirmation",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1680, 400]
+      "position": [1680, 420],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
-    "📖 Book Intake Form": {
-      "main": [[
-        { "node": "📚 Google Books Lookup", "type": "main", "index": 0 },
-        { "node": "🏛️ Open Library Lookup", "type": "main", "index": 0 }
-      ]]
-    },
-    "📚 Google Books Lookup": { "main": [[{ "node": "🔗 Merge Book Sources", "type": "main", "index": 0 }]] },
-    "🏛️ Open Library Lookup": { "main": [[{ "node": "🔗 Merge Book Sources", "type": "main", "index": 1 }]] },
-    "🔗 Merge Book Sources": {
-      "main": [[
-        { "node": "🖼️ Extract Cover URL", "type": "main", "index": 0 },
-        { "node": "🌐 Detect Language", "type": "main", "index": 0 }
-      ]]
-    },
-    "🖼️ Extract Cover URL": { "main": [[{ "node": "🤖 AI: Genre + Plant Spirit (Groq compatible)", "type": "main", "index": 0 }]] },
-    "🌐 Detect Language": { "main": [[{ "node": "🤖 AI: Genre + Plant Spirit (Groq compatible)", "type": "main", "index": 0 }]] },
-    "🤖 AI: Genre + Plant Spirit (Groq compatible)": { "main": [[{ "node": "🌱 Plant in Airtable Vault", "type": "main", "index": 0 }]] },
-    "🌱 Plant in Airtable Vault": {
-      "main": [[
-        { "node": "📒 Backup to Google Sheets", "type": "main", "index": 0 },
-        { "node": "💬 Discord Planting Confirmation", "type": "main", "index": 0 }
-      ]]
-    }
+    "📖 Book Intake Form": { "main": [[ { "node": "📚 Google Books Lookup", "type": "main", "index": 0 }, { "node": "🏛️ Open Library Lookup", "type": "main", "index": 0 } ]] },
+    "📚 Google Books Lookup": { "main": [[ { "node": "🔗 Merge Book Sources", "type": "main", "index": 0 } ]] },
+    "🏛️ Open Library Lookup": { "main": [[ { "node": "🔗 Merge Book Sources", "type": "main", "index": 1 } ]] },
+    "🔗 Merge Book Sources": { "main": [[ { "node": "🖼️ Extract Cover (Free)", "type": "main", "index": 0 }, { "node": "🌐 Detect Language (Free)", "type": "main", "index": 0 } ]] },
+    "🖼️ Extract Cover (Free)": { "main": [[ { "node": "🤖 AI: Genre + Plant Spirit", "type": "main", "index": 0 } ]] },
+    "🌐 Detect Language (Free)": { "main": [[ { "node": "🤖 AI: Genre + Plant Spirit", "type": "main", "index": 0 } ]] },
+    "🤖 AI: Genre + Plant Spirit": { "main": [[ { "node": "🌱 Plant in Airtable Vault", "type": "main", "index": 0 } ]] },
+    "🌱 Plant in Airtable Vault": { "main": [[ { "node": "📒 Backup to Google Sheets", "type": "main", "index": 0 }, { "node": "💬 Discord Planting Confirmation", "type": "main", "index": 0 } ]] }
   },
   "settings": { "executionOrder": "v1" },
   "active": false,
