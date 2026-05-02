@@ -7,19 +7,9 @@
         "formDescription": "Add a book to your enchanted library garden. Title can be in English, Urdu, Arabic, or any language.",
         "formFields": {
           "values": [
-            {
-              "fieldLabel": "Book Title",
-              "fieldType": "text",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Author (optional)",
-              "fieldType": "text"
-            },
-            {
-              "fieldLabel": "Notes / Quote you loved",
-              "fieldType": "textarea"
-            },
+            { "fieldLabel": "Book Title", "fieldType": "text", "requiredField": true },
+            { "fieldLabel": "Author (optional)", "fieldType": "text" },
+            { "fieldLabel": "Notes / Quote you loved", "fieldType": "textarea" },
             {
               "fieldLabel": "Owner / Shelf",
               "fieldType": "dropdown",
@@ -206,10 +196,7 @@
         "operation": "append",
         "documentId": { "__rl": true, "value": "={{ $vars.GOOGLE_SHEETS_BACKUP_ID }}", "mode": "id" },
         "sheetName": { "__rl": true, "value": "Books", "mode": "name" },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "value": {}
-        }
+        "columns": { "mappingMode": "autoMapInputData", "value": {} }
       },
       "id": "sheets-backup",
       "name": "📒 Backup to Google Sheets",
@@ -219,14 +206,15 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $vars.OWNER_TELEGRAM_CHAT_ID }}",
-        "text": "=🌿 *Planting Confirmation* 🌿\n\n📖 \"{{ $('📖 Book Intake Form').item.json['Book Title'] }}\" has been planted\\!\n\n🌸 Plant Spirit: {{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.plant_spirit }}\n📚 Genre: {{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.genre }}\n🌐 Language: {{ $('🌐 Detect Language').item.json.data.detections[0][0].language }}\n💰 Estimated value: ${{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.estimated_price_usd }}\n\nMay it bloom in your library garden\\. 🌷",
-        "additionalFields": { "parse_mode": "MarkdownV2" }
+        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌿 Planting Confirmation\",\n    \"description\": \"📖 **{{ $('📖 Book Intake Form').item.json['Book Title'] }}** has been planted in the library garden!\",\n    \"color\": 7893879,\n    \"fields\": [\n      { \"name\": \"🌸 Plant Spirit\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.plant_spirit }}\", \"inline\": true },\n      { \"name\": \"📚 Genre\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.genre }}\", \"inline\": true },\n      { \"name\": \"🌐 Language\", \"value\": \"{{ $('🌐 Detect Language').item.json.data.detections[0][0].language }}\", \"inline\": true },\n      { \"name\": \"💰 Est. Value\", \"value\": \"${{ $('🤖 AI: Genre + Plant Spirit (Groq compatible)').item.json.message.content.estimated_price_usd }}\", \"inline\": true }\n    ],\n    \"footer\": { \"text\": \"May it bloom in your library garden 🌷\" }\n  }]\n}"
       },
-      "id": "whatsapp-confirm",
-      "name": "📱 Telegram Planting Confirmation",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
+      "id": "discord-confirm",
+      "name": "💬 Discord Planting Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [2160, 400]
     }
   ],
@@ -237,31 +225,17 @@
         { "node": "🏛️ Open Library Lookup", "type": "main", "index": 0 }
       ]]
     },
-    "📚 Google Books Lookup": {
-      "main": [[{ "node": "🔗 Merge Book Sources", "type": "main", "index": 0 }]]
-    },
-    "🏛️ Open Library Lookup": {
-      "main": [[{ "node": "🔗 Merge Book Sources", "type": "main", "index": 1 }]]
-    },
-    "🔗 Merge Book Sources": {
-      "main": [[{ "node": "🌐 Detect Language", "type": "main", "index": 0 }]]
-    },
-    "🌐 Detect Language": {
-      "main": [[{ "node": "🤖 AI: Genre + Plant Spirit (Groq compatible)", "type": "main", "index": 0 }]]
-    },
-    "🤖 AI: Genre + Plant Spirit (Groq compatible)": {
-      "main": [[{ "node": "🎨 Unsplash Cartoon Cover", "type": "main", "index": 0 }]]
-    },
-    "🎨 Unsplash Cartoon Cover": {
-      "main": [[{ "node": "☁️ Host Cover on Cloudinary", "type": "main", "index": 0 }]]
-    },
-    "☁️ Host Cover on Cloudinary": {
-      "main": [[{ "node": "🌱 Plant in Airtable Vault", "type": "main", "index": 0 }]]
-    },
+    "📚 Google Books Lookup": { "main": [[{ "node": "🔗 Merge Book Sources", "type": "main", "index": 0 }]] },
+    "🏛️ Open Library Lookup": { "main": [[{ "node": "🔗 Merge Book Sources", "type": "main", "index": 1 }]] },
+    "🔗 Merge Book Sources": { "main": [[{ "node": "🌐 Detect Language", "type": "main", "index": 0 }]] },
+    "🌐 Detect Language": { "main": [[{ "node": "🤖 AI: Genre + Plant Spirit (Groq compatible)", "type": "main", "index": 0 }]] },
+    "🤖 AI: Genre + Plant Spirit (Groq compatible)": { "main": [[{ "node": "🎨 Unsplash Cartoon Cover", "type": "main", "index": 0 }]] },
+    "🎨 Unsplash Cartoon Cover": { "main": [[{ "node": "☁️ Host Cover on Cloudinary", "type": "main", "index": 0 }]] },
+    "☁️ Host Cover on Cloudinary": { "main": [[{ "node": "🌱 Plant in Airtable Vault", "type": "main", "index": 0 }]] },
     "🌱 Plant in Airtable Vault": {
       "main": [[
         { "node": "📒 Backup to Google Sheets", "type": "main", "index": 0 },
-        { "node": "💬 WhatsApp Planting Confirmation", "type": "main", "index": 0 }
+        { "node": "💬 Discord Planting Confirmation", "type": "main", "index": 0 }
       ]]
     }
   },

@@ -45,25 +45,35 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $vars.OWNER_TELEGRAM_CHAT_ID }}",
-        "text": "=🌅 *Water Your Mind*\n\n_\"{{ $json.message.content.quote }}\"_\n— {{ $json.message.content.attribution }}\n\n🔑 Code: `{{ $json.message.content.unique_code }}`",
-        "additionalFields": { "parse_mode": "Markdown" }
+        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌅 Water Your Mind\",\n    \"description\": \"> *{{ $json.message.content.quote }}*\\n> — {{ $json.message.content.attribution }}\",\n    \"color\": 7893879,\n    \"footer\": { \"text\": \"🔑 Daily Code: {{ $json.message.content.unique_code }}\" }\n  }]\n}"
       },
-      "id": "telegram-quote",
-      "name": "✈️ Telegram Quote",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
+      "id": "discord-quote",
+      "name": "💬 Discord Daily Quote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [700, 280]
     },
     {
       "parameters": {
-        "updates": ["message"],
-        "additionalFields": {}
+        "formTitle": "🔍 Search Your Library",
+        "formDescription": "Type a character name, quote, or any word to search across all your books and PDFs.",
+        "formFields": {
+          "values": [
+            { "fieldLabel": "Search Query", "fieldType": "text", "requiredField": true },
+            { "fieldLabel": "Your Email (results will be sent here)", "fieldType": "text", "requiredField": true }
+          ]
+        },
+        "options": {
+          "customCss": "body{background:#fef6e4;font-family:Georgia,serif;}h1{color:#6b4226;}button{background:#7a9e7e !important;border-radius:999px !important;}"
+        }
       },
-      "id": "telegram-trigger",
-      "name": "🔍 Telegram Search Trigger",
-      "type": "n8n-nodes-base.telegramTrigger",
-      "typeVersion": 1.1,
+      "id": "search-form",
+      "name": "🔍 Book Search Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
       "position": [220, 540],
       "webhookId": "bibliophile-search"
     },
@@ -72,26 +82,26 @@
         "operation": "search",
         "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
-        "filterByFormula": "=OR(SEARCH(LOWER(\"{{ $json.message.text }}\"), LOWER({Notes})), SEARCH(LOWER(\"{{ $json.message.text }}\"), LOWER({Summary})), SEARCH(LOWER(\"{{ $json.message.text }}\"), LOWER({Title})))",
+        "filterByFormula": "=OR(SEARCH(LOWER(\"{{ $json['Search Query'] }}\"), LOWER({Notes})), SEARCH(LOWER(\"{{ $json['Search Query'] }}\"), LOWER({Summary})), SEARCH(LOWER(\"{{ $json['Search Query'] }}\"), LOWER({Title})))",
         "options": { "limit": 5 }
       },
       "id": "search-airtable",
       "name": "🔎 Semantic Search in Vault",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [460, 540]
+      "position": [460, 480]
     },
     {
       "parameters": {
         "operation": "search",
-        "queryString": "=fullText contains '{{ $('🔍 Telegram Search Trigger').item.json.message.text }}' and mimeType = 'application/pdf'",
+        "queryString": "=fullText contains '{{ $('🔍 Book Search Form').item.json['Search Query'] }}' and mimeType = 'application/pdf'",
         "options": {}
       },
       "id": "drive-search",
       "name": "📁 Google Drive PDF Search",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [460, 700]
+      "position": [460, 640]
     },
     {
       "parameters": {
@@ -99,7 +109,7 @@
         "messages": {
           "values": [
             { "role": "system", "content": "You are a librarian. Given search query and matched books/PDFs, write a concise reply under 600 chars listing what was found and the most relevant quote/character." },
-            { "role": "user", "content": "=Query: {{ $('🔍 Telegram Search Trigger').item.json.message.text }}\nAirtable matches: {{ JSON.stringify($('🔎 Semantic Search in Vault').all().map(i => i.json.fields)) }}\nDrive PDFs: {{ JSON.stringify($('📁 Google Drive PDF Search').all().map(i => i.json.name)) }}" }
+            { "role": "user", "content": "=Query: {{ $('🔍 Book Search Form').item.json['Search Query'] }}\nAirtable matches: {{ JSON.stringify($('🔎 Semantic Search in Vault').all().map(i => i.json.fields)) }}\nDrive PDFs: {{ JSON.stringify($('📁 Google Drive PDF Search').all().map(i => i.json.name)) }}" }
           ]
         },
         "options": {}
@@ -108,19 +118,21 @@
       "name": "🤖 AI Summarize Results",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
-      "position": [700, 620]
+      "position": [700, 560]
     },
     {
       "parameters": {
-        "chatId": "={{ $('🔍 Telegram Search Trigger').item.json.message.chat.id }}",
-        "text": "=🔎 *Search results for:* _{{ $('🔍 Telegram Search Trigger').item.json.message.text }}_\n\n{{ $json.message.content }}",
-        "additionalFields": { "parse_mode": "Markdown" }
+        "fromEmail": "={{ $vars.GMAIL_FROM }}",
+        "toList": "={{ $('🔍 Book Search Form').item.json['Your Email (results will be sent here)'] }}",
+        "subject": "=🔎 Search Results: {{ $('🔍 Book Search Form').item.json['Search Query'] }}",
+        "emailType": "html",
+        "message": "=<div style='font-family:Georgia,serif;background:#fef6e4;padding:24px;border-radius:16px;color:#6b4226'><h2>🔍 Search Results</h2><p>Query: <b>{{ $('🔍 Book Search Form').item.json['Search Query'] }}</b></p><hr/><p>{{ $json.message.content }}</p><br/><p style='color:#8a6a4d;font-size:12px'>Bibliophile Concierge — Your Enchanted Library</p></div>"
       },
-      "id": "telegram-reply",
-      "name": "✈️ Telegram Reply",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [940, 620]
+      "id": "gmail-search-reply",
+      "name": "📧 Gmail: Send Search Results",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [940, 560]
     },
     {
       "parameters": {
@@ -130,7 +142,7 @@
       "name": "🌙 Evening Completed Check",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [220, 940]
+      "position": [220, 900]
     },
     {
       "parameters": {
@@ -144,7 +156,7 @@
       "name": "🏁 Find New Completed Books",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [460, 940]
+      "position": [460, 900]
     },
     {
       "parameters": {
@@ -162,22 +174,20 @@
       "name": "🤖 Generate Archive Content",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
-      "position": [700, 940]
+      "position": [700, 900]
     },
     {
       "parameters": {
-        "resource": "media",
-        "binaryPropertyName": "data",
-        "additionalFields": {
-          "caption": "={{ $json.message.content.instagram_caption }}"
-        }
+        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"✅ Book Completed!\",\n    \"description\": \"**{{ $('🏁 Find New Completed Books').item.json.fields.Title }}** by {{ $('🏁 Find New Completed Books').item.json.fields.Author }} has been archived.\",\n    \"color\": 3066993,\n    \"fields\": [\n      { \"name\": \"📸 Instagram\", \"value\": \"{{ $json.message.content.instagram_caption }}\", \"inline\": false }\n    ],\n    \"footer\": { \"text\": \"Posted to GitHub, Dropbox, Pinterest, LinkedIn, Spotify, YouTube\" }\n  }]\n}"
       },
-      "id": "instagram",
-      "name": "📷 Instagram Post",
+      "id": "discord-completed",
+      "name": "💬 Discord: Book Completed",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [960, 760],
-      "notes": "Uses Facebook Graph API for Instagram Business — see README setup."
+      "position": [960, 760]
     },
     {
       "parameters": {
@@ -284,35 +294,32 @@
         "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "id": "={{ $('🏁 Find New Completed Books').item.json.id }}",
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": { "Posted": true }
-        }
+        "columns": { "mappingMode": "defineBelow", "value": { "Posted": true } }
       },
       "id": "mark-posted",
       "name": "✅ Mark as Posted",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [1220, 940]
+      "position": [1220, 900]
     }
   ],
   "connections": {
     "🌅 Daily 8AM Trigger": { "main": [[{ "node": "🤖 AI Quote of the Day", "type": "main", "index": 0 }]] },
     "🤖 AI Quote of the Day": { "main": [[
       { "node": "📧 Gmail: Water Your Mind", "type": "main", "index": 0 },
-      { "node": "✈️ Telegram Quote", "type": "main", "index": 0 }
+      { "node": "💬 Discord Daily Quote", "type": "main", "index": 0 }
     ]] },
-    "🔍 Telegram Search Trigger": { "main": [[
+    "🔍 Book Search Form": { "main": [[
       { "node": "🔎 Semantic Search in Vault", "type": "main", "index": 0 },
       { "node": "📁 Google Drive PDF Search", "type": "main", "index": 0 }
     ]] },
     "🔎 Semantic Search in Vault": { "main": [[{ "node": "🤖 AI Summarize Results", "type": "main", "index": 0 }]] },
     "📁 Google Drive PDF Search": { "main": [[{ "node": "🤖 AI Summarize Results", "type": "main", "index": 0 }]] },
-    "🤖 AI Summarize Results": { "main": [[{ "node": "✈️ Telegram Reply", "type": "main", "index": 0 }]] },
+    "🤖 AI Summarize Results": { "main": [[{ "node": "📧 Gmail: Send Search Results", "type": "main", "index": 0 }]] },
     "🌙 Evening Completed Check": { "main": [[{ "node": "🏁 Find New Completed Books", "type": "main", "index": 0 }]] },
     "🏁 Find New Completed Books": { "main": [[{ "node": "🤖 Generate Archive Content", "type": "main", "index": 0 }]] },
     "🤖 Generate Archive Content": { "main": [[
-      { "node": "📷 Instagram Post", "type": "main", "index": 0 },
+      { "node": "💬 Discord: Book Completed", "type": "main", "index": 0 },
       { "node": "💼 LinkedIn Post", "type": "main", "index": 0 },
       { "node": "🐙 GitHub Markdown Summary", "type": "main", "index": 0 },
       { "node": "📌 Pinterest Mood Pin", "type": "main", "index": 0 },

@@ -10,7 +10,7 @@
             { "fieldLabel": "Book Title", "fieldType": "text", "requiredField": true },
             { "fieldLabel": "Action", "fieldType": "dropdown", "fieldOptions": { "values": [ {"option": "Issue"}, {"option": "Return"} ] }, "requiredField": true },
             { "fieldLabel": "Friend's Name", "fieldType": "text" },
-            { "fieldLabel": "Friend's WhatsApp / Telegram", "fieldType": "text" },
+            { "fieldLabel": "Friend's Contact (WhatsApp/Email)", "fieldType": "text" },
             { "fieldLabel": "Return Due Date", "fieldType": "date" }
           ]
         },
@@ -84,11 +84,7 @@
         "id": "={{ $('🔎 Find Book in Vault').item.json.id }}",
         "columns": {
           "mappingMode": "defineBelow",
-          "value": {
-            "Status": "Available",
-            "Lent To": "",
-            "Due Date": ""
-          }
+          "value": { "Status": "Available", "Lent To": "", "Due Date": "" }
         }
       },
       "id": "mark-returned",
@@ -104,14 +100,14 @@
         "end": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}T10:00:00",
         "additionalFields": {
           "summary": "=📖 Return: {{ $('📋 Loan Form').item.json['Book Title'] }} from {{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
-          "description": "=Lent on {{ $now.format('yyyy-MM-dd') }}. Friend contact: {{ $('📋 Loan Form').item.json[\"Friend's WhatsApp / Telegram\"] }}"
+          "description": "=Lent on {{ $now.format('yyyy-MM-dd') }}. Friend contact: {{ $('📋 Loan Form').item.json[\"Friend's Contact (WhatsApp/Email)\"] }}"
         }
       },
       "id": "gcal",
       "name": "📅 Google Calendar Reminder",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
-      "position": [1180, 120]
+      "position": [1180, 80]
     },
     {
       "parameters": {
@@ -125,7 +121,20 @@
       "name": "✅ Todoist Reminder",
       "type": "n8n-nodes-base.todoist",
       "typeVersion": 2.1,
-      "position": [1180, 280]
+      "position": [1180, 240]
+    },
+    {
+      "parameters": {
+        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"embeds\": [{ \"title\": \"📤 Book Issued\", \"description\": \"**{{ $('📋 Loan Form').item.json['Book Title'] }}** has been lent to {{ $('📋 Loan Form').item.json[\\\"Friend's Name\\\"] }}.\", \"color\": 15844367, \"fields\": [{ \"name\": \"📅 Due Date\", \"value\": \"{{ $('📋 Loan Form').item.json['Return Due Date'] }}\", \"inline\": true }], \"footer\": { \"text\": \"Bibliophile Concierge\" } }] }"
+      },
+      "id": "discord-issued",
+      "name": "💬 Discord: Book Issued Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 400]
     },
     {
       "parameters": {
@@ -146,7 +155,7 @@
       "name": "📒 Google Sheets Loan Log",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1180, 440]
+      "position": [1180, 560]
     },
     {
       "parameters": {
@@ -156,7 +165,7 @@
       "name": "⏰ Daily 9AM Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [220, 760]
+      "position": [220, 800]
     },
     {
       "parameters": {
@@ -174,17 +183,17 @@
       "name": "🌤️ Check Weather",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 760]
+      "position": [460, 800]
     },
     {
       "parameters": {
-        "jsCode": "const w = $input.first().json.weather?.[0]?.main || 'Clear';\nconst map = {\n  Rain:'Poetry', Drizzle:'Poetry', Clouds:'Poetry',\n  Clear:'Adventure', Sunny:'Adventure',\n  Snow:'Children', Thunderstorm:'Religion', Mist:'Biography'\n};\nconst genre = map[w] || 'Novels';\nreturn [{ json: { weather: w, suggestedGenre: genre } }];"
+        "jsCode": "const w = $input.first().json.weather?.[0]?.main || 'Clear';\nconst map = {\n  Rain:'Poetry', Drizzle:'Poetry', Clouds:'Poetry',\n  Clear:'Novels', Sunny:'Novels',\n  Snow:'Children', Thunderstorm:'Religion', Mist:'Biography'\n};\nconst genre = map[w] || 'Novels';\nreturn [{ json: { weather: w, suggestedGenre: genre } }];"
       },
       "id": "weather-map",
       "name": "🍃 Weather → Genre",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [700, 760]
+      "position": [700, 800]
     },
     {
       "parameters": {
@@ -198,19 +207,20 @@
       "name": "🌸 Pick a Book for Today",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [940, 760]
+      "position": [940, 800]
     },
     {
       "parameters": {
-        "chatId": "={{ $vars.OWNER_TELEGRAM_CHAT_ID }}",
-        "text": "=🌧️ Today is a *{{ $('🍃 Weather → Genre').item.json.suggestedGenre }} Day* ({{ $('🍃 Weather → Genre').item.json.weather }})\n\n📖 Suggestion from your shelf:\n*{{ $json.fields.Title }}* — {{ $json.fields.Author }}\n\n🌱 Plant Spirit: {{ $json.fields['Plant Spirit'] }}\n\n_Water your mind today._",
-        "additionalFields": { "parse_mode": "Markdown" }
+        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌤️ Today's Reading Suggestion\",\n    \"description\": \"Today is a **{{ $('🍃 Weather → Genre').item.json.suggestedGenre }} Day** ({{ $('🍃 Weather → Genre').item.json.weather }})!\",\n    \"color\": 5793266,\n    \"fields\": [\n      { \"name\": \"📖 Suggested Book\", \"value\": \"**{{ $json.fields.Title }}**\", \"inline\": true },\n      { \"name\": \"✍️ Author\", \"value\": \"{{ $json.fields.Author }}\", \"inline\": true },\n      { \"name\": \"🌱 Plant Spirit\", \"value\": \"{{ $json.fields['Plant Spirit'] }}\", \"inline\": true }\n    ],\n    \"footer\": { \"text\": \"Water your mind today 🌷\" }\n  }]\n}"
       },
-      "id": "telegram-suggest",
-      "name": "✈️ Telegram Daily Suggestion",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [1180, 760]
+      "id": "discord-suggest",
+      "name": "💬 Discord Daily Suggestion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 800]
     },
     {
       "parameters": {
@@ -220,7 +230,7 @@
       "name": "⏰ Daily Overdue Check",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [220, 1000]
+      "position": [220, 1060]
     },
     {
       "parameters": {
@@ -234,32 +244,34 @@
       "name": "⚠️ Find Overdue Books",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [460, 1000]
+      "position": [460, 1060]
     },
     {
       "parameters": {
-        "chatId": "={{ $vars.OWNER_DISCORD_WEBHOOK_USERID || '0' }}",
-        "text": "=📚 Friendly nudge: *{{ $json.fields.Title }}* was due on {{ $json.fields['Due Date'] }}. Lent to {{ $json.fields['Lent To'] }}.\n\nPlease return when you can — thank you! 🌷",
-        "additionalFields": { "parse_mode": "Markdown" }
+        "fromEmail": "={{ $vars.GMAIL_FROM }}",
+        "toList": "={{ $vars.OWNER_EMAIL }}",
+        "subject": "=⚠️ Overdue Book: {{ $json.fields.Title }}",
+        "emailType": "html",
+        "message": "=<div style='font-family:Georgia,serif;background:#fef6e4;padding:24px;border-radius:16px;color:#6b4226'><h2>📚 Overdue Book Alert</h2><p><b>{{ $json.fields.Title }}</b> was due on <b>{{ $json.fields['Due Date'] }}</b>.</p><p>Lent to: <b>{{ $json.fields['Lent To'] }}</b></p><p>Please follow up with them to get it returned. 🌷</p></div>"
       },
-      "id": "telegram-nudge",
-      "name": "📨 Telegram Nudge to Friend",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [700, 920]
+      "id": "gmail-overdue",
+      "name": "📧 Gmail: Overdue Alert to You",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [700, 980]
     },
     {
       "parameters": {
         "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"content\": \"📚 Library reminder: **{{ $json.fields.Title }}** is overdue (due {{ $json.fields['Due Date'] }}). Lent to {{ $json.fields['Lent To'] }}.\" }"
+        "jsonBody": "={ \"embeds\": [{ \"title\": \"⚠️ Overdue Book\", \"description\": \"**{{ $json.fields.Title }}** was due on {{ $json.fields['Due Date'] }}.\", \"color\": 15158332, \"fields\": [{ \"name\": \"👤 Lent To\", \"value\": \"{{ $json.fields['Lent To'] }}\", \"inline\": true }], \"footer\": { \"text\": \"Please follow up — Bibliophile Concierge\" } }] }"
       },
       "id": "discord-ping",
-      "name": "💬 Discord Self-Ping",
+      "name": "💬 Discord Overdue Ping",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [700, 1080]
+      "position": [700, 1140]
     }
   ],
   "connections": {
@@ -275,18 +287,19 @@
       "main": [[
         { "node": "📅 Google Calendar Reminder", "type": "main", "index": 0 },
         { "node": "✅ Todoist Reminder", "type": "main", "index": 0 },
+        { "node": "💬 Discord: Book Issued Alert", "type": "main", "index": 0 },
         { "node": "📒 Google Sheets Loan Log", "type": "main", "index": 0 }
       ]]
     },
     "⏰ Daily 9AM Trigger": { "main": [[{ "node": "🌤️ Check Weather", "type": "main", "index": 0 }]] },
     "🌤️ Check Weather": { "main": [[{ "node": "🍃 Weather → Genre", "type": "main", "index": 0 }]] },
     "🍃 Weather → Genre": { "main": [[{ "node": "🌸 Pick a Book for Today", "type": "main", "index": 0 }]] },
-    "🌸 Pick a Book for Today": { "main": [[{ "node": "✈️ Telegram Daily Suggestion", "type": "main", "index": 0 }]] },
+    "🌸 Pick a Book for Today": { "main": [[{ "node": "💬 Discord Daily Suggestion", "type": "main", "index": 0 }]] },
     "⏰ Daily Overdue Check": { "main": [[{ "node": "⚠️ Find Overdue Books", "type": "main", "index": 0 }]] },
     "⚠️ Find Overdue Books": {
       "main": [[
-        { "node": "📨 Telegram Nudge to Friend", "type": "main", "index": 0 },
-        { "node": "💬 Discord Self-Ping", "type": "main", "index": 0 }
+        { "node": "📧 Gmail: Overdue Alert to You", "type": "main", "index": 0 },
+        { "node": "💬 Discord Overdue Ping", "type": "main", "index": 0 }
       ]]
     }
   },
