@@ -111,16 +111,17 @@
     },
     {
       "parameters": {
-        "task": "=Return \"{{ $('📋 Loan Form').item.json['Book Title'] }}\" from {{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
+        "taskListId": { "__rl": true, "value": "@default", "mode": "list", "cachedResultName": "My Tasks" },
+        "title": "=📖 Return \"{{ $('📋 Loan Form').item.json['Book Title'] }}\" from {{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
         "additionalFields": {
           "dueDate": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}",
-          "priority": 3
+          "notes": "=Lent on {{ $now.format('yyyy-MM-dd') }}. Contact: {{ $('📋 Loan Form').item.json[\"Friend's Contact (WhatsApp/Email)\"] }}"
         }
       },
-      "id": "todoist",
-      "name": "✅ Todoist Reminder",
-      "type": "n8n-nodes-base.todoist",
-      "typeVersion": 2.1,
+      "id": "google-tasks",
+      "name": "✅ Google Tasks Reminder",
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
       "position": [1180, 240]
     },
     {
@@ -286,7 +287,7 @@
     "📕 Mark as Issued": {
       "main": [[
         { "node": "📅 Google Calendar Reminder", "type": "main", "index": 0 },
-        { "node": "✅ Todoist Reminder", "type": "main", "index": 0 },
+        { "node": "✅ Google Tasks Reminder", "type": "main", "index": 0 },
         { "node": "💬 Discord: Book Issued Alert", "type": "main", "index": 0 },
         { "node": "📒 Google Sheets Loan Log", "type": "main", "index": 0 }
       ]]
