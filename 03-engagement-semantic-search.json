@@ -1,5 +1,5 @@
 {
-  "name": "Bibliophile Concierge - Member 3: Engagement & Semantic Search",
+  "name": "🌿 Bibliophile Concierge — Member 3: Engagement & Semantic Search",
   "nodes": [
     {
       "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 8 * * *" }] } },
@@ -11,10 +11,12 @@
     },
     {
       "parameters": {
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
         "model": "llama-3.3-70b-versatile",
         "messages": {
           "values": [
-            { "role": "system", "content": "You are a poetic librarian. Return STRICT JSON: { unique_code: 6-char alphanumeric, quote: under 25 words, attribution: author or book name }" },
+            { "role": "system", "content": "You are a poetic librarian. Return STRICT JSON only: { \"unique_code\": \"6-char alphanumeric\", \"quote\": \"under 25 words\", \"attribution\": \"author or book name\" }" },
             { "role": "user", "content": "Generate today's Water Your Mind motivational message." }
           ]
         },
@@ -29,11 +31,11 @@
     },
     {
       "parameters": {
-        "fromEmail": "={{ $vars.GMAIL_FROM }}",
-        "toList": "={{ $vars.OWNER_EMAIL }}",
+        "fromEmail": "khalidwardha1@gmail.com",
+        "toList": "khalidwardha1@gmail.com",
         "subject": "=🌱 Water Your Mind — Code {{ $json.message.content.unique_code }}",
         "emailType": "html",
-        "message": "=<div style='font-family:Georgia,serif;background:#fef6e4;padding:24px;border-radius:16px;color:#6b4226'><h2>🌿 Today's Quote</h2><blockquote style='font-size:18px;font-style:italic'>\"{{ $json.message.content.quote }}\"</blockquote><p>— {{ $json.message.content.attribution }}</p><p>Your daily code: <b>{{ $json.message.content.unique_code }}</b></p></div>"
+        "message": "=<div style='font-family:Georgia,serif;background:linear-gradient(135deg,#fef6e4,#f3d2c1);padding:32px;border-radius:20px;color:#6b4226;max-width:480px;margin:auto;'><h2 style='color:#7a9e7e;letter-spacing:1px;'>🌿 Water Your Mind</h2><blockquote style='font-size:20px;font-style:italic;border-left:4px solid #d4a373;padding-left:16px;margin:20px 0;'>&ldquo;{{ $json.message.content.quote }}&rdquo;</blockquote><p style='color:#9b7b5a;'>— {{ $json.message.content.attribution }}</p><div style='background:#fffaf0;border:1.5px solid #d4a373;border-radius:12px;padding:14px;margin-top:20px;text-align:center;'><span style='font-size:13px;color:#9b7b5a;'>Today's Code</span><br/><b style='font-size:22px;letter-spacing:3px;color:#6b4226;'>{{ $json.message.content.unique_code }}</b></div><p style='margin-top:24px;color:#7a9e7e;font-size:13px;font-style:italic;text-align:center;'>🌷 Bibliophile Concierge — Your Enchanted Library Garden</p></div>"
       },
       "id": "gmail-quote",
       "name": "📧 Gmail: Water Your Mind",
@@ -43,10 +45,10 @@
     },
     {
       "parameters": {
-        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌅 Water Your Mind\",\n    \"description\": \"> *{{ $json.message.content.quote }}*\\n> — {{ $json.message.content.attribution }}\",\n    \"color\": 7893879,\n    \"footer\": { \"text\": \"🔑 Daily Code: {{ $json.message.content.unique_code }}\" }\n  }]\n}",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌅 Water Your Mind\",\n    \"description\": \"> *{{ $json.message.content.quote }}*\\n> — {{ $json.message.content.attribution }}\",\n    \"color\": 7893879,\n    \"footer\": { \"text\": \"🔑 Daily Code: {{ $json.message.content.unique_code }} | Bibliophile Concierge 🌷\" }\n  }]\n}",
         "options": {}
       },
       "id": "discord-quote",
@@ -58,15 +60,17 @@
     },
     {
       "parameters": {
-        "formTitle": "🔍 Search Your Library",
-        "formDescription": "Search for any character, quote, or topic across all your books.",
+        "formTitle": "🔍 Search Your Enchanted Library",
+        "formDescription": "Search for any character, quote, topic, or theme across all your books and PDFs.",
         "formFields": {
           "values": [
             { "fieldLabel": "Search Query", "fieldType": "text", "requiredField": true },
-            { "fieldLabel": "Your Email (to receive results)", "fieldType": "text", "requiredField": true }
+            { "fieldLabel": "Your Email (results will be sent here)", "fieldType": "text", "requiredField": true }
           ]
         },
-        "options": { "customCss": "body{background:#fef6e4;font-family:Georgia,serif;}h1{color:#6b4226;}button{background:#7a9e7e !important;border-radius:999px !important;}" }
+        "options": {
+          "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:Georgia,serif;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:20px;box-shadow:0 8px 32px rgba(120,80,40,0.18);padding:32px;}h1{color:#6b4226;}label{color:#7a5c3a;font-weight:bold;}input{border:1.5px solid #d4a373 !important;border-radius:10px !important;background:#fffdf7 !important;}button{background:linear-gradient(135deg,#7a9e7e,#4a7c59) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;}"
+        }
       },
       "id": "search-form",
       "name": "🔍 Book Search Form",
@@ -78,7 +82,7 @@
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "=OR(SEARCH(LOWER(\"{{ $json['Search Query'] }}\"), LOWER({Notes})), SEARCH(LOWER(\"{{ $json['Search Query'] }}\"), LOWER({Summary})), SEARCH(LOWER(\"{{ $json['Search Query'] }}\"), LOWER({Title})))",
         "options": { "limit": 5 }
@@ -103,10 +107,12 @@
     },
     {
       "parameters": {
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
         "model": "llama-3.3-70b-versatile",
         "messages": {
           "values": [
-            { "role": "system", "content": "You are a librarian. Given a search query and matched books, write a concise reply under 600 chars listing what was found and the most relevant result." },
+            { "role": "system", "content": "You are a friendly librarian. Given a search query and matched books, write a warm, concise reply under 600 chars listing what was found and the most relevant result." },
             { "role": "user", "content": "=Query: {{ $('🔍 Book Search Form').item.json['Search Query'] }}\nMatches: {{ JSON.stringify($('🔎 Search in Vault').all().map(i => ({ title: i.json.fields?.Title, summary: i.json.fields?.Summary, notes: i.json.fields?.Notes }))) }}\nPDFs found: {{ $('📁 Google Drive PDF Search').all().map(i => i.json.name).join(', ') || 'none' }}" }
           ]
         },
@@ -120,11 +126,11 @@
     },
     {
       "parameters": {
-        "fromEmail": "={{ $vars.GMAIL_FROM }}",
-        "toList": "={{ $('🔍 Book Search Form').item.json['Your Email (to receive results)'] }}",
-        "subject": "=🔎 Search Results: {{ $('🔍 Book Search Form').item.json['Search Query'] }}",
+        "fromEmail": "khalidwardha1@gmail.com",
+        "toList": "={{ $('🔍 Book Search Form').item.json['Your Email (results will be sent here)'] }}",
+        "subject": "=🔎 Library Search: {{ $('🔍 Book Search Form').item.json['Search Query'] }}",
         "emailType": "html",
-        "message": "=<div style='font-family:Georgia,serif;background:#fef6e4;padding:24px;border-radius:16px;color:#6b4226'><h2>🔍 Your Search Results</h2><p>Query: <b>{{ $('🔍 Book Search Form').item.json['Search Query'] }}</b></p><hr/><p>{{ $json.message.content }}</p><p style='color:#8a6a4d;font-size:12px'>Bibliophile Concierge 🌷</p></div>"
+        "message": "=<div style='font-family:Georgia,serif;background:linear-gradient(135deg,#fef6e4,#f3d2c1);padding:32px;border-radius:20px;color:#6b4226;max-width:480px;margin:auto;'><h2 style='color:#7a9e7e;'>🔍 Your Search Results</h2><p>Query: <b>{{ $('🔍 Book Search Form').item.json['Search Query'] }}</b></p><hr style='border:1px solid #d4a373;'/><p style='line-height:1.8;'>{{ $json.message.content }}</p><p style='margin-top:24px;color:#9b7b5a;font-size:13px;font-style:italic;text-align:center;'>🌷 Bibliophile Concierge — Your Enchanted Library Garden</p></div>"
       },
       "id": "gmail-results",
       "name": "📧 Gmail: Search Results",
@@ -143,7 +149,7 @@
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "=AND({Status}=\"Completed\", {Posted}!=TRUE())",
         "options": {}
@@ -156,10 +162,12 @@
     },
     {
       "parameters": {
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
         "model": "llama-3.3-70b-versatile",
         "messages": {
           "values": [
-            { "role": "system", "content": "Return STRICT JSON: { markdown_summary (GitHub-flavored MD: title, 3 key takeaways, favourite quote), youtube_search (4-6 word search for book trailer or summary), instagram_caption (under 200 chars with 3 hashtags) }" },
+            { "role": "system", "content": "Return STRICT JSON only: { \"markdown_summary\": \"GitHub-flavored MD with # Title, ## Key Takeaways (3 bullets), ## Favourite Quote\", \"youtube_search\": \"4-6 word search for book trailer or summary video\", \"instagram_caption\": \"under 200 chars with 3 hashtags\" }" },
             { "role": "user", "content": "=Title: {{ $json.fields.Title }}\nAuthor: {{ $json.fields.Author }}\nGenre: {{ $json.fields.Genre }}\nNotes: {{ $json.fields.Notes }}\nSummary: {{ $json.fields.Summary }}" }
           ]
         },
@@ -174,10 +182,10 @@
     },
     {
       "parameters": {
-        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"✅ Book Completed!\",\n    \"description\": \"**{{ $('🏁 Find Completed Books').item.json.fields.Title }}** by {{ $('🏁 Find Completed Books').item.json.fields.Author }} — archived!\",\n    \"color\": 3066993,\n    \"thumbnail\": { \"url\": \"{{ $('🏁 Find Completed Books').item.json.fields['Cover URL'] || '' }}\" },\n    \"fields\": [\n      { \"name\": \"📸 Caption\", \"value\": \"{{ $json.message.content.instagram_caption }}\", \"inline\": false }\n    ],\n    \"footer\": { \"text\": \"Posted to GitHub & Google Sheets\" }\n  }]\n}",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"✅ Book Completed & Archived!\",\n    \"description\": \"**{{ $('🏁 Find Completed Books').item.json.fields.Title }}** by {{ $('🏁 Find Completed Books').item.json.fields.Author }} 🎉\",\n    \"color\": 3066993,\n    \"thumbnail\": { \"url\": \"{{ $('🏁 Find Completed Books').item.json.fields['Cover URL'] || '' }}\" },\n    \"fields\": [\n      { \"name\": \"📸 Caption\", \"value\": \"{{ $json.message.content.instagram_caption }}\" }\n    ],\n    \"footer\": { \"text\": \"📚 Saved to GitHub & Google Sheets — Bibliophile Concierge 🌷\" }\n  }]\n}",
         "options": {}
       },
       "id": "discord-completed",
@@ -190,8 +198,8 @@
     {
       "parameters": {
         "operation": "create",
-        "owner": "={{ $vars.GITHUB_OWNER }}",
-        "repository": "={{ $vars.GITHUB_REPO }}",
+        "owner": "wardha-netizen",
+        "repository": "bibliophile-concierge",
         "filePath": "=summaries/{{ $('🏁 Find Completed Books').item.json.fields.Title.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase() }}.md",
         "fileContent": "={{ $json.message.content.markdown_summary }}",
         "commitMessage": "=📚 Add summary: {{ $('🏁 Find Completed Books').item.json.fields.Title }}"
@@ -205,17 +213,17 @@
     {
       "parameters": {
         "operation": "append",
-        "documentId": { "__rl": true, "value": "={{ $vars.GOOGLE_SHEETS_BACKUP_ID }}", "mode": "id" },
+        "documentId": { "__rl": true, "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ", "mode": "id" },
         "sheetName": { "__rl": true, "value": "Completed", "mode": "name" },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Title":    "={{ $('🏁 Find Completed Books').item.json.fields.Title }}",
-            "Author":   "={{ $('🏁 Find Completed Books').item.json.fields.Author }}",
-            "Genre":    "={{ $('🏁 Find Completed Books').item.json.fields.Genre }}",
-            "Caption":  "={{ $json.message.content.instagram_caption }}",
-            "Summary":  "={{ $json.message.content.markdown_summary }}",
-            "Date":     "={{ $now.format('yyyy-MM-dd') }}"
+            "Title":   "={{ $('🏁 Find Completed Books').item.json.fields.Title }}",
+            "Author":  "={{ $('🏁 Find Completed Books').item.json.fields.Author }}",
+            "Genre":   "={{ $('🏁 Find Completed Books').item.json.fields.Genre }}",
+            "Caption": "={{ $json.message.content.instagram_caption }}",
+            "Summary": "={{ $json.message.content.markdown_summary }}",
+            "Date":    "={{ $now.format('yyyy-MM-dd') }}"
           }
         }
       },
@@ -229,7 +237,7 @@
       "parameters": {
         "url": "https://www.googleapis.com/youtube/v3/search",
         "sendQuery": true,
-        "queryParameters": { "parameters": [ { "name": "key", "value": "={{ $vars.YOUTUBE_API_KEY }}" }, { "name": "q", "value": "={{ $('🤖 Generate Archive Content').item.json.message.content.youtube_search }}" }, { "name": "part", "value": "snippet" }, { "name": "maxResults", "value": "1" }, { "name": "type", "value": "video" } ] },
+        "queryParameters": { "parameters": [ { "name": "key", "value": "AIzaSyBvhgifheJiYgVEqLLnH6VbgGpWhBgSvVc" }, { "name": "q", "value": "={{ $('🤖 Generate Archive Content').item.json.message.content.youtube_search }}" }, { "name": "part", "value": "snippet" }, { "name": "maxResults", "value": "1" }, { "name": "type", "value": "video" } ] },
         "options": {}
       },
       "id": "youtube",
@@ -242,7 +250,7 @@
     {
       "parameters": {
         "operation": "update",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "id": "={{ $('🏁 Find Completed Books').item.json.id }}",
         "columns": { "mappingMode": "defineBelow", "value": { "Posted": true } }

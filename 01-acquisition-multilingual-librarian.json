@@ -1,10 +1,10 @@
 {
-  "name": "Bibliophile Concierge - Member 1: Acquisition & Multi-Lingual Librarian",
+  "name": "🌿 Bibliophile Concierge — Member 1: Acquisition & Librarian",
   "nodes": [
     {
       "parameters": {
-        "formTitle": "🌿 Plant a New Book",
-        "formDescription": "Add a book to your library. Title can be in English, Urdu, or Arabic.",
+        "formTitle": "🌿 Plant a New Book in Your Library Garden",
+        "formDescription": "Add a book to your enchanted library. Title can be in English, Urdu, or Arabic.",
         "formFields": {
           "values": [
             { "fieldLabel": "Book Title", "fieldType": "text", "requiredField": true },
@@ -13,7 +13,9 @@
             { "fieldLabel": "Owner / Shelf", "fieldType": "dropdown", "fieldOptions": { "values": [ {"option":"Main Garden"}, {"option":"Member 1"}, {"option":"Member 2"}, {"option":"Member 3"} ] } }
           ]
         },
-        "options": { "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:Georgia,serif;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:16px;}h1{color:#6b4226;}button{background:#7a9e7e !important;border-radius:999px !important;}" }
+        "options": {
+          "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:'Georgia',serif;min-height:100vh;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:20px;box-shadow:0 8px 32px rgba(120,80,40,0.18);padding:32px;}h1{color:#6b4226;font-size:1.6em;letter-spacing:1px;}label{color:#7a5c3a;font-weight:bold;}input,textarea,select{border:1.5px solid #d4a373 !important;border-radius:10px !important;background:#fffdf7 !important;}button{background:linear-gradient(135deg,#7a9e7e,#4a7c59) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;box-shadow:0 4px 12px rgba(74,124,89,0.3) !important;}"
+        }
       },
       "id": "form-trigger",
       "name": "📖 Book Intake Form",
@@ -70,7 +72,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const title = $('📖 Book Intake Form').item.json['Book Title'] || '';\nlet lang = 'English';\nif (/[\\u0600-\\u06FF]/.test(title)) lang = 'Arabic/Urdu';\nelse if (/[\\u4e00-\\u9fff]/.test(title)) lang = 'Chinese';\nelse if (/[\\u0900-\\u097F]/.test(title)) lang = 'Hindi';\nelse if (/[а-яА-Я]/.test(title)) lang = 'Russian';\nreturn [{ json: { detectedLanguage: lang } }];"
+        "jsCode": "const title = $('📖 Book Intake Form').item.json['Book Title'] || '';\nlet lang = 'English';\nif (/[\\u0600-\\u06FF]/.test(title)) lang = 'Arabic/Urdu';\nelse if (/[\\u4e00-\\u9fff]/.test(title)) lang = 'Chinese';\nelse if (/[\\u0900-\\u097F]/.test(title)) lang = 'Hindi';\nreturn [{ json: { detectedLanguage: lang } }];"
       },
       "id": "detect-lang",
       "name": "🌐 Detect Language (Free)",
@@ -80,10 +82,12 @@
     },
     {
       "parameters": {
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
         "model": "llama-3.3-70b-versatile",
         "messages": {
           "values": [
-            { "role": "system", "content": "You are a librarian. Return STRICT JSON: { genre (Novels/Poetry/Education/Religion/Biography/Science/Children/Other), plant_spirit (flower matching genre: Poetry=Lily, Novels=Rose, Education=Oak, Religion=Lotus, Biography=Sunflower, Science=Fern, Children=Daisy, Other=Ivy), one_line_summary, estimated_price_usd (number), mood_tag (cozy/adventurous/melancholic/intellectual/spiritual/playful) }" },
+            { "role": "system", "content": "You are a librarian. Return STRICT JSON only: { \"genre\": one of Novels/Poetry/Education/Religion/Biography/Science/Children/Other, \"plant_spirit\": flower matching genre (Poetry=Lily, Novels=Rose, Education=Oak, Religion=Lotus, Biography=Sunflower, Science=Fern, Children=Daisy, Other=Ivy), \"one_line_summary\": string, \"estimated_price_usd\": number, \"mood_tag\": one of cozy/adventurous/melancholic/intellectual/spiritual/playful }" },
             { "role": "user", "content": "=Title: {{ $('📖 Book Intake Form').item.json['Book Title'] }}\nAuthor: {{ $('📖 Book Intake Form').item.json['Author (optional)'] || 'unknown' }}\nInfo: {{ JSON.stringify($('📚 Google Books Lookup').item.json.items?.[0]?.volumeInfo || {}) }}" }
           ]
         },
@@ -99,7 +103,7 @@
     {
       "parameters": {
         "operation": "create",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "columns": {
           "mappingMode": "defineBelow",
@@ -127,7 +131,7 @@
     {
       "parameters": {
         "operation": "append",
-        "documentId": { "__rl": true, "value": "={{ $vars.GOOGLE_SHEETS_BACKUP_ID }}", "mode": "id" },
+        "documentId": { "__rl": true, "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ", "mode": "id" },
         "sheetName": { "__rl": true, "value": "Books", "mode": "name" },
         "columns": {
           "mappingMode": "defineBelow",
@@ -149,10 +153,10 @@
     },
     {
       "parameters": {
-        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌿 New Book Planted!\",\n    \"description\": \"**{{ $('📖 Book Intake Form').item.json['Book Title'] }}** has been added to the library!\",\n    \"color\": 7893879,\n    \"thumbnail\": { \"url\": \"{{ $('🖼️ Extract Cover (Free)').item.json.coverUrl }}\" },\n    \"fields\": [\n      { \"name\": \"📚 Genre\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.genre }}\", \"inline\": true },\n      { \"name\": \"🌸 Plant Spirit\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.plant_spirit }}\", \"inline\": true },\n      { \"name\": \"🌐 Language\", \"value\": \"{{ $('🌐 Detect Language (Free)').item.json.detectedLanguage }}\", \"inline\": true },\n      { \"name\": \"💰 Est. Value\", \"value\": \"${{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.estimated_price_usd }}\", \"inline\": true },\n      { \"name\": \"📝 Summary\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.one_line_summary }}\" }\n    ],\n    \"footer\": { \"text\": \"May it bloom in your library garden 🌷\" }\n  }]\n}",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌿 New Book Planted!\",\n    \"description\": \"📖 **{{ $('📖 Book Intake Form').item.json['Book Title'] }}** has been added to the library garden!\",\n    \"color\": 7893879,\n    \"thumbnail\": { \"url\": \"{{ $('🖼️ Extract Cover (Free)').item.json.coverUrl }}\" },\n    \"fields\": [\n      { \"name\": \"📚 Genre\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.genre }}\", \"inline\": true },\n      { \"name\": \"🌸 Plant Spirit\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.plant_spirit }}\", \"inline\": true },\n      { \"name\": \"🌐 Language\", \"value\": \"{{ $('🌐 Detect Language (Free)').item.json.detectedLanguage }}\", \"inline\": true },\n      { \"name\": \"💰 Est. Value\", \"value\": \"${{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.estimated_price_usd }}\", \"inline\": true },\n      { \"name\": \"📝 Summary\", \"value\": \"{{ $('🤖 AI: Genre + Plant Spirit').item.json.message.content.one_line_summary }}\" }\n    ],\n    \"footer\": { \"text\": \"🌷 Bibliophile Concierge — May it bloom in your garden\" }\n  }]\n}",
         "options": {}
       },
       "id": "discord-confirm",

@@ -1,31 +1,20 @@
 {
-  "name": "Bibliophile Concierge - Member 4: WhatsApp Team Hub",
+  "name": "🌿 Bibliophile Concierge — Member 4: WhatsApp Team Hub",
   "nodes": [
-
     {
       "parameters": {
         "formTitle": "📚 Request a Book from the Library",
-        "formDescription": "Tell your team which book you want to borrow. They'll get a WhatsApp notification instantly.",
+        "formDescription": "Tell your team which book you want. They'll get a WhatsApp notification instantly!",
         "formFields": {
           "values": [
             { "fieldLabel": "Your Name", "fieldType": "text", "requiredField": true },
             { "fieldLabel": "Book Title You Want", "fieldType": "text", "requiredField": true },
             { "fieldLabel": "Why do you want it? (optional)", "fieldType": "textarea" },
-            {
-              "fieldLabel": "How urgent?",
-              "fieldType": "dropdown",
-              "fieldOptions": {
-                "values": [
-                  { "option": "🟢 Whenever free" },
-                  { "option": "🟡 This week" },
-                  { "option": "🔴 ASAP" }
-                ]
-              }
-            }
+            { "fieldLabel": "How urgent?", "fieldType": "dropdown", "fieldOptions": { "values": [ {"option":"🟢 Whenever free"}, {"option":"🟡 This week"}, {"option":"🔴 ASAP"} ] } }
           ]
         },
         "options": {
-          "customCss": "body{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);font-family:Georgia,serif;} .form-container{background:#fff;border:2px solid #66bb6a;border-radius:16px;} h1{color:#2e7d32;} button{background:#43a047 !important;border-radius:999px !important;}"
+          "customCss": "body{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);font-family:Georgia,serif;}.form-container{background:#fff;border:2px solid #66bb6a;border-radius:20px;box-shadow:0 8px 32px rgba(74,124,89,0.18);padding:32px;}h1{color:#2e7d32;}label{color:#388e3c;font-weight:bold;}input,textarea,select{border:1.5px solid #66bb6a !important;border-radius:10px !important;}button{background:linear-gradient(135deg,#43a047,#2e7d32) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;}"
         }
       },
       "id": "request-form",
@@ -35,11 +24,10 @@
       "position": [220, 280],
       "webhookId": "bibliophile-request"
     },
-
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "=SEARCH(LOWER(\"{{ $json['Book Title You Want'] }}\"), LOWER({Title}))",
         "options": { "limit": 1 }
@@ -50,10 +38,9 @@
       "typeVersion": 2.1,
       "position": [460, 280]
     },
-
     {
       "parameters": {
-        "jsCode": "const requestor = $('📋 Book Request Form').item.json['Your Name'];\nconst bookWanted = $('📋 Book Request Form').item.json['Book Title You Want'];\nconst reason = $('📋 Book Request Form').item.json['Why do you want it? (optional)'] || 'No reason given';\nconst urgency = $('📋 Book Request Form').item.json['How urgent?'];\nconst found = $input.all();\n\nlet status = '❓ Not in library yet';\nlet foundTitle = bookWanted;\nif (found.length > 0) {\n  const s = found[0].json.fields?.Status || 'Unknown';\n  foundTitle = found[0].json.fields?.Title || bookWanted;\n  status = s === 'Available' ? '✅ AVAILABLE NOW' : s === 'Issued' ? `📕 Currently lent out` : `📌 ${s}`;\n}\n\nconst msg = `📚 *Book Request*\\n\\n👤 *From:* ${requestor}\\n📖 *Book:* ${foundTitle}\\n📊 *Status:* ${status}\\n⚡ *Urgency:* ${urgency}\\n💬 *Reason:* ${reason}`;\n\nreturn [{ json: { message: msg, requestor, bookWanted: foundTitle, status, urgency } }];"
+        "jsCode": "const requestor = $('📋 Book Request Form').item.json['Your Name'];\nconst bookWanted = $('📋 Book Request Form').item.json['Book Title You Want'];\nconst reason = $('📋 Book Request Form').item.json['Why do you want it? (optional)'] || 'No reason given';\nconst urgency = $('📋 Book Request Form').item.json['How urgent?'] || '🟢 Whenever free';\nconst found = $input.all();\nlet status = '❓ Not in library yet';\nlet foundTitle = bookWanted;\nif (found.length > 0 && found[0].json.fields) {\n  const s = found[0].json.fields.Status || 'Unknown';\n  foundTitle = found[0].json.fields.Title || bookWanted;\n  if (s === 'Available') status = '✅ AVAILABLE NOW';\n  else if (s === 'Issued') status = `📕 Currently lent out (due ${found[0].json.fields['Due Date'] || '?'})`;\n  else status = `📌 ${s}`;\n}\nconst msg = `📚 *Book Request — Bibliophile Concierge*\\n\\n👤 *From:* ${requestor}\\n📖 *Book:* ${foundTitle}\\n📊 *Status:* ${status}\\n⚡ *Urgency:* ${urgency}\\n💬 *Reason:* ${reason}\\n\\n🌷 _Respond on WhatsApp to confirm!_`;\nreturn [{ json: { message: msg, requestor, bookWanted: foundTitle, status, urgency } }];"
       },
       "id": "build-request-msg",
       "name": "📝 Build Request Message",
@@ -61,86 +48,70 @@
       "typeVersion": 2,
       "position": [700, 280]
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER1_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $json.message }}\" }\n}",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923340391648\", \"type\": \"text\", \"text\": { \"body\": \"{{ $json.message }}\" } }",
         "options": {}
       },
-      "id": "wa-member1-request",
-      "name": "📱 WhatsApp → Member 1",
+      "id": "wa-m1",
+      "name": "📱 WhatsApp → Member 1 (You)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [940, 160]
+      "position": [940, 160],
+      "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER2_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $('📝 Build Request Message').item.json.message }}\" }\n}",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923090578964\", \"type\": \"text\", \"text\": { \"body\": \"{{ $('📝 Build Request Message').item.json.message }}\" } }",
         "options": {}
       },
-      "id": "wa-member2-request",
-      "name": "📱 WhatsApp → Member 2",
+      "id": "wa-m2",
+      "name": "📱 WhatsApp → Teammate 1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [940, 300]
+      "position": [940, 300],
+      "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER3_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $('📝 Build Request Message').item.json.message }}\" }\n}",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923208768965\", \"type\": \"text\", \"text\": { \"body\": \"{{ $('📝 Build Request Message').item.json.message }}\" } }",
         "options": {}
       },
-      "id": "wa-member3-request",
-      "name": "📱 WhatsApp → Member 3 (Owner)",
+      "id": "wa-m3",
+      "name": "📱 WhatsApp → Teammate 2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [940, 440]
+      "position": [940, 440],
+      "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
         "operation": "append",
-        "documentId": { "__rl": true, "value": "={{ $vars.GOOGLE_SHEETS_BACKUP_ID }}", "mode": "id" },
+        "documentId": { "__rl": true, "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ", "mode": "id" },
         "sheetName": { "__rl": true, "value": "Requests", "mode": "name" },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Requestor": "={{ $('📋 Book Request Form').item.json['Your Name'] }}",
+            "Requestor":   "={{ $('📋 Book Request Form').item.json['Your Name'] }}",
             "Book Wanted": "={{ $('📝 Build Request Message').item.json.bookWanted }}",
-            "Status": "={{ $('📝 Build Request Message').item.json.status }}",
-            "Urgency": "={{ $('📋 Book Request Form').item.json['How urgent?'] }}",
-            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+            "Status":      "={{ $('📝 Build Request Message').item.json.status }}",
+            "Urgency":     "={{ $('📋 Book Request Form').item.json['How urgent?'] }}",
+            "Date":        "={{ $now.format('yyyy-MM-dd HH:mm') }}"
           }
         }
       },
@@ -150,22 +121,18 @@
       "typeVersion": 4.5,
       "position": [940, 580]
     },
-
     {
-      "parameters": {
-        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }] }
-      },
+      "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }] } },
       "id": "digest-cron",
-      "name": "⏰ Daily 9AM Digest",
+      "name": "⏰ Daily 9AM Team Digest",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [220, 780]
     },
-
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "",
         "options": {}
@@ -176,10 +143,9 @@
       "typeVersion": 2.1,
       "position": [460, 780]
     },
-
     {
       "parameters": {
-        "jsCode": "const books = $input.all().map(i => i.json.fields);\nconst total = books.length;\nconst available = books.filter(b => b.Status === 'Available').length;\nconst issued = books.filter(b => b.Status === 'Issued').length;\nconst completed = books.filter(b => b.Status === 'Completed').length;\nconst overdue = books.filter(b => {\n  if (b.Status !== 'Issued' || !b['Due Date']) return false;\n  return new Date(b['Due Date']) < new Date();\n}).length;\n\nconst issuedList = books\n  .filter(b => b.Status === 'Issued')\n  .map(b => `  • _${b.Title}_ → ${b['Lent To'] || 'unknown'} (due ${b['Due Date'] || '?'})`)\n  .join('\\n') || '  None';\n\nconst today = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });\n\nconst msg = `🌿 *Bibliophile Team Digest*\\n📅 ${today}\\n\\n📚 *Library Stats:*\\n✅ Available: ${available}\\n📕 Issued: ${issued}\\n🏁 Completed: ${completed}\\n⚠️ Overdue: ${overdue}\\n📖 Total: ${total}\\n\\n📕 *Currently Out:*\\n${issuedList}\\n\\n_Happy reading, team! 🌷_`;\n\nreturn [{ json: { digestMsg: msg, overdue } }];"
+        "jsCode": "const books = $input.all().map(i => i.json.fields);\nconst total = books.length;\nconst available = books.filter(b => b.Status === 'Available').length;\nconst issued = books.filter(b => b.Status === 'Issued').length;\nconst completed = books.filter(b => b.Status === 'Completed').length;\nconst overdue = books.filter(b => b.Status === 'Issued' && b['Due Date'] && new Date(b['Due Date']) < new Date()).length;\nconst issuedList = books.filter(b => b.Status === 'Issued').map(b => `  • _${b.Title}_ → ${b['Lent To'] || 'unknown'} (due ${b['Due Date'] || '?'})`).join('\\n') || '  None currently out';\nconst today = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });\nconst msg = `🌿 *Bibliophile Team Digest*\\n📅 ${today}\\n\\n📚 *Library Stats:*\\n✅ Available: ${available}\\n📕 Issued: ${issued}\\n🏁 Completed: ${completed}\\n⚠️ Overdue: ${overdue}\\n📖 Total Books: ${total}\\n\\n📕 *Currently Out:*\\n${issuedList}\\n\\n_Happy reading, team! 🌷_`;\nreturn [{ json: { digestMsg: msg } }];"
       },
       "id": "build-digest",
       "name": "📊 Build Team Digest",
@@ -187,77 +153,58 @@
       "typeVersion": 2,
       "position": [700, 780]
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER1_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $json.digestMsg }}\" }\n}",
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923340391648\", \"type\": \"text\", \"text\": { \"body\": \"{{ $json.digestMsg }}\" } }",
         "options": {}
       },
       "id": "digest-m1",
       "name": "📱 Digest → Member 1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [940, 680]
+      "position": [940, 680],
+      "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER2_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $('📊 Build Team Digest').item.json.digestMsg }}\" }\n}",
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923090578964\", \"type\": \"text\", \"text\": { \"body\": \"{{ $('📊 Build Team Digest').item.json.digestMsg }}\" } }",
         "options": {}
       },
       "id": "digest-m2",
-      "name": "📱 Digest → Member 2",
+      "name": "📱 Digest → Teammate 1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [940, 820]
+      "position": [940, 820],
+      "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER3_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"{{ $('📊 Build Team Digest').item.json.digestMsg }}\" }\n}",
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923208768965\", \"type\": \"text\", \"text\": { \"body\": \"{{ $('📊 Build Team Digest').item.json.digestMsg }}\" } }",
         "options": {}
       },
       "id": "digest-m3",
-      "name": "📱 Digest → Member 3 (Owner)",
+      "name": "📱 Digest → Teammate 2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [940, 960]
+      "position": [940, 960],
+      "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
-        "formTitle": "✅ Mark Book as Returned",
-        "formDescription": "Use this form to mark a book as returned by your teammate.",
+        "formTitle": "✅ Mark a Book as Returned",
+        "formDescription": "Use this when a teammate returns a book. All 3 members will be notified instantly.",
         "formFields": {
           "values": [
             { "fieldLabel": "Book Title", "fieldType": "text", "requiredField": true },
@@ -265,21 +212,20 @@
           ]
         },
         "options": {
-          "customCss": "body{background:#e8f5e9;font-family:Georgia,serif;} h1{color:#2e7d32;} button{background:#43a047 !important;border-radius:999px !important;}"
+          "customCss": "body{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);font-family:Georgia,serif;}.form-container{background:#fff;border:2px solid #66bb6a;border-radius:20px;padding:32px;}h1{color:#2e7d32;}button{background:linear-gradient(135deg,#43a047,#2e7d32) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;}"
         }
       },
       "id": "return-form",
       "name": "📬 Book Returned Form",
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.1,
-      "position": [220, 1200],
+      "position": [220, 1180],
       "webhookId": "bibliophile-returned"
     },
-
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "=SEARCH(LOWER(\"{{ $json['Book Title'] }}\"), LOWER({Title}))",
         "options": { "limit": 1 }
@@ -288,123 +234,72 @@
       "name": "🔍 Find Returned Book",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [460, 1200]
+      "position": [460, 1180]
     },
-
     {
       "parameters": {
         "operation": "update",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "id": "={{ $json.id }}",
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": { "Status": "Available", "Lent To": "", "Due Date": "" }
-        }
+        "columns": { "mappingMode": "defineBelow", "value": { "Status": "Available", "Lent To": "", "Due Date": "" } }
       },
       "id": "update-returned",
-      "name": "📗 Update Status to Available",
+      "name": "📗 Update to Available",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [700, 1200]
+      "position": [700, 1180]
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER1_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"📖 *Book Now Available!*\\n\\n✅ *{{ $('📬 Book Returned Form').item.json['Book Title'] }}* has been returned by {{ $('📬 Book Returned Form').item.json['Returned By'] }}.\\n\\nFirst come, first served! 🌷\" }\n}",
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923340391648\", \"type\": \"text\", \"text\": { \"body\": \"📖 *Book Now Available!*\\n\\n✅ *{{ $('📬 Book Returned Form').item.json['Book Title'] }}* has been returned by {{ $('📬 Book Returned Form').item.json['Returned By'] }}.\\n\\nFirst come, first served! 🌷\" } }",
         "options": {}
       },
-      "id": "return-notify-m1",
-      "name": "📱 Return Alert → Member 1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [940, 1120]
+      "id": "ret-m1", "name": "📱 Return Alert → Member 1",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+      "position": [940, 1080], "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER2_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"📖 *Book Now Available!*\\n\\n✅ *{{ $('📬 Book Returned Form').item.json['Book Title'] }}* has been returned by {{ $('📬 Book Returned Form').item.json['Returned By'] }}.\\n\\nFirst come, first served! 🌷\" }\n}",
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923090578964\", \"type\": \"text\", \"text\": { \"body\": \"📖 *Book Now Available!*\\n\\n✅ *{{ $('📬 Book Returned Form').item.json['Book Title'] }}* has been returned by {{ $('📬 Book Returned Form').item.json['Returned By'] }}.\\n\\nFirst come, first served! 🌷\" } }",
         "options": {}
       },
-      "id": "return-notify-m2",
-      "name": "📱 Return Alert → Member 2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [940, 1260]
+      "id": "ret-m2", "name": "📱 Return Alert → Teammate 1",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+      "position": [940, 1220], "onError": "continueRegularOutput"
     },
-
     {
       "parameters": {
-        "url": "=https://graph.facebook.com/v18.0/{{ $vars.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $vars.WHATSAPP_ACCESS_TOKEN }}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $vars.MEMBER3_PHONE }}\",\n  \"type\": \"text\",\n  \"text\": { \"body\": \"📖 *Book Now Available!*\\n\\n✅ *{{ $('📬 Book Returned Form').item.json['Book Title'] }}* has been returned by {{ $('📬 Book Returned Form').item.json['Returned By'] }}.\\n\\nFirst come, first served! 🌷\" }\n}",
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer EAANaspkL6zIBRdzLb9qIZCDZCAXihxMZCojvqSHX16wbmyPsCBvfouZAIYWZBVkHjaUmYWmVqkoFRzZCOSRTSMAWM9q444yygFRgrP88LUizbjVXK4upgtVsfqZBU4Y7zPxzMpHsQCUxaREMjZCNKpgxDI8nZCdGKHXwqYSQPT4HVru8HdCA9l5jKYGoQ5ZCoIT6UfpQZDZD" }, { "name": "Content-Type", "value": "application/json" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923208768965\", \"type\": \"text\", \"text\": { \"body\": \"📖 *Book Now Available!*\\n\\n✅ *{{ $('📬 Book Returned Form').item.json['Book Title'] }}* has been returned by {{ $('📬 Book Returned Form').item.json['Returned By'] }}.\\n\\nFirst come, first served! 🌷\" } }",
         "options": {}
       },
-      "id": "return-notify-m3",
-      "name": "📱 Return Alert → Member 3",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [940, 1400]
+      "id": "ret-m3", "name": "📱 Return Alert → Teammate 2",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+      "position": [940, 1360], "onError": "continueRegularOutput"
     }
-
   ],
   "connections": {
-    "📋 Book Request Form": { "main": [[{ "node": "🔎 Check If Book Available", "type": "main", "index": 0 }]] },
-    "🔎 Check If Book Available": { "main": [[{ "node": "📝 Build Request Message", "type": "main", "index": 0 }]] },
-    "📝 Build Request Message": {
-      "main": [[
-        { "node": "📱 WhatsApp → Member 1", "type": "main", "index": 0 },
-        { "node": "📱 WhatsApp → Member 2", "type": "main", "index": 0 },
-        { "node": "📱 WhatsApp → Member 3 (Owner)", "type": "main", "index": 0 },
-        { "node": "📒 Log Request in Sheets", "type": "main", "index": 0 }
-      ]]
-    },
-    "⏰ Daily 9AM Digest": { "main": [[{ "node": "📊 Get All Books", "type": "main", "index": 0 }]] },
-    "📊 Get All Books": { "main": [[{ "node": "📊 Build Team Digest", "type": "main", "index": 0 }]] },
-    "📊 Build Team Digest": {
-      "main": [[
-        { "node": "📱 Digest → Member 1", "type": "main", "index": 0 },
-        { "node": "📱 Digest → Member 2", "type": "main", "index": 0 },
-        { "node": "📱 Digest → Member 3 (Owner)", "type": "main", "index": 0 }
-      ]]
-    },
-    "📬 Book Returned Form": { "main": [[{ "node": "🔍 Find Returned Book", "type": "main", "index": 0 }]] },
-    "🔍 Find Returned Book": { "main": [[{ "node": "📗 Update Status to Available", "type": "main", "index": 0 }]] },
-    "📗 Update Status to Available": {
-      "main": [[
-        { "node": "📱 Return Alert → Member 1", "type": "main", "index": 0 },
-        { "node": "📱 Return Alert → Member 2", "type": "main", "index": 0 },
-        { "node": "📱 Return Alert → Member 3", "type": "main", "index": 0 }
-      ]]
-    }
+    "📋 Book Request Form": { "main": [[ { "node": "🔎 Check If Book Available", "type": "main", "index": 0 } ]] },
+    "🔎 Check If Book Available": { "main": [[ { "node": "📝 Build Request Message", "type": "main", "index": 0 } ]] },
+    "📝 Build Request Message": { "main": [[ { "node": "📱 WhatsApp → Member 1 (You)", "type": "main", "index": 0 }, { "node": "📱 WhatsApp → Teammate 1", "type": "main", "index": 0 }, { "node": "📱 WhatsApp → Teammate 2", "type": "main", "index": 0 }, { "node": "📒 Log Request in Sheets", "type": "main", "index": 0 } ]] },
+    "⏰ Daily 9AM Team Digest": { "main": [[ { "node": "📊 Get All Books", "type": "main", "index": 0 } ]] },
+    "📊 Get All Books": { "main": [[ { "node": "📊 Build Team Digest", "type": "main", "index": 0 } ]] },
+    "📊 Build Team Digest": { "main": [[ { "node": "📱 Digest → Member 1", "type": "main", "index": 0 }, { "node": "📱 Digest → Teammate 1", "type": "main", "index": 0 }, { "node": "📱 Digest → Teammate 2", "type": "main", "index": 0 } ]] },
+    "📬 Book Returned Form": { "main": [[ { "node": "🔍 Find Returned Book", "type": "main", "index": 0 } ]] },
+    "🔍 Find Returned Book": { "main": [[ { "node": "📗 Update to Available", "type": "main", "index": 0 } ]] },
+    "📗 Update to Available": { "main": [[ { "node": "📱 Return Alert → Member 1", "type": "main", "index": 0 }, { "node": "📱 Return Alert → Teammate 1", "type": "main", "index": 0 }, { "node": "📱 Return Alert → Teammate 2", "type": "main", "index": 0 } ]] }
   },
   "settings": { "executionOrder": "v1" },
   "active": false,

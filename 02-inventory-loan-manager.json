@@ -1,9 +1,9 @@
 {
-  "name": "Bibliophile Concierge - Member 2: Inventory & Loan Manager",
+  "name": "🌿 Bibliophile Concierge — Member 2: Inventory & Loan Manager",
   "nodes": [
     {
       "parameters": {
-        "formTitle": "📤 Issue / Return a Book",
+        "formTitle": "📤 Issue or Return a Book",
         "formDescription": "Lend a book to a friend or mark it as returned.",
         "formFields": {
           "values": [
@@ -14,7 +14,9 @@
             { "fieldLabel": "Return Due Date", "fieldType": "date" }
           ]
         },
-        "options": { "customCss": "body{background:#fef6e4;font-family:Georgia,serif;}h1{color:#6b4226;}button{background:#7a9e7e !important;border-radius:999px !important;}" }
+        "options": {
+          "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:'Georgia',serif;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:20px;box-shadow:0 8px 32px rgba(120,80,40,0.18);padding:32px;}h1{color:#6b4226;}label{color:#7a5c3a;font-weight:bold;}input,select{border:1.5px solid #d4a373 !important;border-radius:10px !important;background:#fffdf7 !important;}button{background:linear-gradient(135deg,#7a9e7e,#4a7c59) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;}"
+        }
       },
       "id": "loan-form",
       "name": "📋 Loan Form",
@@ -26,7 +28,7 @@
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "=SEARCH(LOWER(\"{{ $json['Book Title'] }}\"), LOWER({Title}))",
         "options": {}
@@ -56,7 +58,7 @@
     {
       "parameters": {
         "operation": "update",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "id": "={{ $('🔎 Find Book in Vault').item.json.id }}",
         "columns": { "mappingMode": "defineBelow", "value": { "Status": "Issued", "Lent To": "={{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}", "Due Date": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}" } }
@@ -70,7 +72,7 @@
     {
       "parameters": {
         "operation": "update",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "id": "={{ $('🔎 Find Book in Vault').item.json.id }}",
         "columns": { "mappingMode": "defineBelow", "value": { "Status": "Available", "Lent To": "", "Due Date": "" } }
@@ -114,10 +116,10 @@
     },
     {
       "parameters": {
-        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"embeds\": [{ \"title\": \"📤 Book Issued\", \"description\": \"**{{ $('📋 Loan Form').item.json['Book Title'] }}** lent to **{{ $('📋 Loan Form').item.json[\\\"Friend's Name\\\"] }}**.\", \"color\": 15844367, \"fields\": [{ \"name\": \"📅 Due Date\", \"value\": \"{{ $('📋 Loan Form').item.json['Return Due Date'] }}\", \"inline\": true }], \"footer\": { \"text\": \"Bibliophile Concierge\" } }] }",
+        "jsonBody": "={ \"embeds\": [{ \"title\": \"📤 Book Issued\", \"description\": \"**{{ $('📋 Loan Form').item.json['Book Title'] }}** lent to **{{ $('📋 Loan Form').item.json[\\\"Friend's Name\\\"] }}**.\", \"color\": 15844367, \"fields\": [{ \"name\": \"📅 Due Date\", \"value\": \"{{ $('📋 Loan Form').item.json['Return Due Date'] }}\", \"inline\": true }], \"footer\": { \"text\": \"🌷 Bibliophile Concierge\" } }] }",
         "options": {}
       },
       "id": "discord-issued",
@@ -130,7 +132,7 @@
     {
       "parameters": {
         "operation": "appendOrUpdate",
-        "documentId": { "__rl": true, "value": "={{ $vars.GOOGLE_SHEETS_BACKUP_ID }}", "mode": "id" },
+        "documentId": { "__rl": true, "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ", "mode": "id" },
         "sheetName": { "__rl": true, "value": "Loans", "mode": "name" },
         "columns": { "mappingMode": "defineBelow", "value": { "Title": "={{ $('📋 Loan Form').item.json['Book Title'] }}", "Friend": "={{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}", "Due": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}", "Status": "Issued" } }
       },
@@ -152,7 +154,7 @@
       "parameters": {
         "url": "https://api.openweathermap.org/data/2.5/weather",
         "sendQuery": true,
-        "queryParameters": { "parameters": [ { "name": "q", "value": "={{ $vars.OWNER_CITY }}" }, { "name": "appid", "value": "={{ $vars.OPENWEATHER_API_KEY }}" }, { "name": "units", "value": "metric" } ] },
+        "queryParameters": { "parameters": [ { "name": "q", "value": "Karachi,PK" }, { "name": "appid", "value": "dfe155a8638638a991868df06e158a27" }, { "name": "units", "value": "metric" } ] },
         "options": {}
       },
       "id": "weather",
@@ -164,7 +166,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const w = $input.first().json.weather?.[0]?.main || 'Clear';\nconst map = { Rain:'Poetry', Drizzle:'Poetry', Clouds:'Novels', Clear:'Novels', Snow:'Children', Thunderstorm:'Religion', Mist:'Biography', Fog:'Biography' };\nreturn [{ json: { weather: w, suggestedGenre: map[w] || 'Novels' } }];"
+        "jsCode": "const w = $input.first().json.weather?.[0]?.main || 'Clear';\nconst map = { Rain:'Poetry', Drizzle:'Poetry', Clouds:'Novels', Clear:'Novels', Snow:'Children', Thunderstorm:'Religion', Mist:'Biography', Fog:'Biography', Haze:'Biography' };\nreturn [{ json: { weather: w, suggestedGenre: map[w] || 'Novels' } }];"
       },
       "id": "weather-map",
       "name": "🍃 Weather → Genre",
@@ -175,7 +177,7 @@
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "=AND({Genre}=\"{{ $json.suggestedGenre }}\", {Status}=\"Available\")",
         "options": { "limit": 1 }
@@ -188,10 +190,10 @@
     },
     {
       "parameters": {
-        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌤️ Today's Reading Suggestion\",\n    \"description\": \"Today is a **{{ $('🍃 Weather → Genre').item.json.suggestedGenre }} Day** ({{ $('🍃 Weather → Genre').item.json.weather }})!\",\n    \"color\": 5793266,\n    \"thumbnail\": { \"url\": \"{{ $json.fields['Cover URL'] || '' }}\" },\n    \"fields\": [\n      { \"name\": \"📖 Book\", \"value\": \"**{{ $json.fields.Title }}**\", \"inline\": true },\n      { \"name\": \"✍️ Author\", \"value\": \"{{ $json.fields.Author || 'Unknown' }}\", \"inline\": true },\n      { \"name\": \"🌱 Plant Spirit\", \"value\": \"{{ $json.fields['Plant Spirit'] || '🌿' }}\", \"inline\": true }\n    ],\n    \"footer\": { \"text\": \"Water your mind today 🌷\" }\n  }]\n}",
+        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"🌤️ Today's Reading Suggestion\",\n    \"description\": \"Today is a **{{ $('🍃 Weather → Genre').item.json.suggestedGenre }} Day** in Karachi ({{ $('🍃 Weather → Genre').item.json.weather }})!\",\n    \"color\": 5793266,\n    \"thumbnail\": { \"url\": \"{{ $json.fields['Cover URL'] || '' }}\" },\n    \"fields\": [\n      { \"name\": \"📖 Book\", \"value\": \"**{{ $json.fields.Title }}**\", \"inline\": true },\n      { \"name\": \"✍️ Author\", \"value\": \"{{ $json.fields.Author || 'Unknown' }}\", \"inline\": true },\n      { \"name\": \"🌱 Plant Spirit\", \"value\": \"{{ $json.fields['Plant Spirit'] || '🌿' }}\", \"inline\": true }\n    ],\n    \"footer\": { \"text\": \"🌷 Water your mind today — Bibliophile Concierge\" }\n  }]\n}",
         "options": {}
       },
       "id": "discord-suggest",
@@ -212,7 +214,7 @@
     {
       "parameters": {
         "operation": "search",
-        "base": { "__rl": true, "value": "={{ $vars.AIRTABLE_BASE_ID }}", "mode": "id" },
+        "base": { "__rl": true, "value": "apptGlLDt9VHCE9ey", "mode": "id" },
         "table": { "__rl": true, "value": "Books", "mode": "name" },
         "filterByFormula": "=AND({Status}=\"Issued\", IS_BEFORE({Due Date}, TODAY()))",
         "options": {}
@@ -225,11 +227,11 @@
     },
     {
       "parameters": {
-        "fromEmail": "={{ $vars.GMAIL_FROM }}",
-        "toList": "={{ $vars.OWNER_EMAIL }}",
+        "fromEmail": "khalidwardha1@gmail.com",
+        "toList": "khalidwardha1@gmail.com",
         "subject": "=⚠️ Overdue Book: {{ $json.fields.Title }}",
         "emailType": "html",
-        "message": "=<div style='font-family:Georgia,serif;background:#fef6e4;padding:24px;border-radius:16px;color:#6b4226'><h2>📚 Overdue Book Alert</h2><p><b>{{ $json.fields.Title }}</b> was due on <b>{{ $json.fields['Due Date'] }}</b>.</p><p>Lent to: <b>{{ $json.fields['Lent To'] }}</b></p><p>Please follow up. 🌷</p></div>"
+        "message": "=<div style='font-family:Georgia,serif;background:linear-gradient(135deg,#fef6e4,#f3d2c1);padding:32px;border-radius:20px;color:#6b4226;max-width:480px;margin:auto;'><h2 style='color:#c0392b;'>⚠️ Overdue Book Alert</h2><p>📖 <b>{{ $json.fields.Title }}</b> was due on <b>{{ $json.fields['Due Date'] }}</b>.</p><p>👤 Lent to: <b>{{ $json.fields['Lent To'] }}</b></p><p>Please follow up with them to get it returned.</p><p style='margin-top:24px;color:#7a9e7e;font-style:italic;'>🌷 Bibliophile Concierge — Your Enchanted Library</p></div>"
       },
       "id": "gmail-overdue",
       "name": "📧 Gmail: Overdue Alert",
@@ -239,10 +241,10 @@
     },
     {
       "parameters": {
-        "url": "={{ $vars.DISCORD_WEBHOOK_URL }}",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"embeds\": [{ \"title\": \"⚠️ Overdue Book\", \"description\": \"**{{ $json.fields.Title }}** was due {{ $json.fields['Due Date'] }}.\", \"color\": 15158332, \"fields\": [{ \"name\": \"👤 Lent To\", \"value\": \"{{ $json.fields['Lent To'] }}\", \"inline\": true }], \"footer\": { \"text\": \"Follow up — Bibliophile Concierge\" } }] }",
+        "jsonBody": "={ \"embeds\": [{ \"title\": \"⚠️ Overdue Book!\", \"description\": \"**{{ $json.fields.Title }}** was due on {{ $json.fields['Due Date'] }}.\", \"color\": 15158332, \"fields\": [{ \"name\": \"👤 Lent To\", \"value\": \"{{ $json.fields['Lent To'] }}\", \"inline\": true }], \"footer\": { \"text\": \"🌷 Please follow up — Bibliophile Concierge\" } }] }",
         "options": {}
       },
       "id": "discord-ping",
