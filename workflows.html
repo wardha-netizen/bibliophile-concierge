@@ -404,7 +404,7 @@
       </tbody>
     </table>
 
-    <div class="qr-hint">💡 <strong>What happens next:</strong> Google Books + Open Library fetch metadata → Groq AI assigns genre &amp; plant spirit → cover image fetched → record saved to Airtable (apptGlLDt9VHCE9ey) + Google Sheets → Discord notification sent.</div>
+    <div class="qr-hint">💡 <strong>What happens next:</strong> Google Books + Open Library fetch metadata → <strong>Google Gemini AI</strong> assigns genre &amp; plant spirit → cover image fetched → record saved to Airtable (apptGlLDt9VHCE9ey) + Google Sheets → Discord notification sent.</div>
   </div>
 
   <!-- ══ SUB-FLOW 2 ══ -->
@@ -414,7 +414,7 @@
       <div class="wf-card-title">
         <div class="wf-label">Sub-Flow 2 · Inventory</div>
         <h3>Loan Manager — Issue or Return Form</h3>
-        <p>Issue a book to a borrower or mark it as returned. Updates Airtable lending status, creates a Google Calendar reminder, and sends a Gmail overdue alert when due.</p>
+        <p>Issue a book to a borrower or mark it as returned. Updates Airtable lending status, creates Google Calendar + Tasks reminders, and sends Gmail overdue alerts automatically.</p>
       </div>
     </div>
 
@@ -445,7 +445,7 @@
       </tbody>
     </table>
 
-    <div class="qr-hint">💡 <strong>Also runs automatically:</strong> Daily 9AM cron checks Karachi weather via OpenWeatherMap → picks a matching genre → Discord suggestion. Daily overdue check fires Gmail alerts for books past their due date.</div>
+    <div class="qr-hint">💡 <strong>Also runs automatically:</strong> ⏰ <strong>Daily 9AM cron</strong> checks Karachi weather via OpenWeatherMap → picks a matching genre → Discord suggestion. ⏰ <strong>Daily overdue check</strong> fires Gmail + Discord alerts for books past their due date. Google Tasks reminder also created on each issue.</div>
   </div>
 
   <!-- ══ SUB-FLOW 3 ══ -->
@@ -455,7 +455,7 @@
       <div class="wf-card-title">
         <div class="wf-label">Sub-Flow 3 · Engagement</div>
         <h3>Semantic Search — Search Your Library</h3>
-        <p>Search any quote, character, or topic across your entire Airtable vault and Google Drive PDFs. Groq AI ranks and summarizes the matches and emails the results instantly.</p>
+        <p>Search any quote, character, or topic across your entire Airtable vault and Google Drive PDFs. Groq AI ranks and summarizes the matches and emails the results instantly. Evening cron auto-archives completed books to GitHub.</p>
       </div>
     </div>
 
@@ -484,7 +484,7 @@
       </tbody>
     </table>
 
-    <div class="qr-hint">💡 <strong>Search pipeline:</strong> Airtable Notes/Summary + Google Drive PDFs searched in parallel → Groq AI merges &amp; ranks results → Gmail delivers formatted results. Also: daily 8AM "Water Your Mind" motivational quote sent via Gmail + Discord, and evening archive of completed books pushed to GitHub.</div>
+    <div class="qr-hint">💡 <strong>Search pipeline:</strong> Airtable Notes/Summary + Google Drive PDFs searched in parallel → Groq AI merges &amp; ranks results → Gmail delivers formatted results. ⏰ <strong>Daily 8AM cron</strong>: Groq AI-generated "Water Your Mind" quote via Gmail + Discord. ⏰ <strong>Evening cron</strong>: completed books archived to GitHub with AI summary + YouTube video.</div>
   </div>
 
   <!-- ══ SUB-FLOW 4 ══ -->
@@ -494,7 +494,7 @@
       <div class="wf-card-title">
         <div class="wf-label">Sub-Flow 4 · Team Hub</div>
         <h3>WhatsApp Collaboration — Book Request Form</h3>
-        <p>Request a book from the library. All 3 team members are notified via WhatsApp Cloud API instantly. Requests are logged to Google Sheets and confirmations sent via Gmail.</p>
+        <p>Request a book from the library. All 3 team members notified via WhatsApp instantly. Also runs a <strong>weekly literary news digest</strong> — SerpAPI searches the web, Groq AI writes a curated HTML email, sent automatically every week.</p>
       </div>
     </div>
 
@@ -525,7 +525,7 @@
       </tbody>
     </table>
 
-    <div class="qr-hint">💡 <strong>What happens next:</strong> Airtable checked for availability → message built → WhatsApp sent to all 3 team members simultaneously → request logged in Google Sheets → Gmail confirmation to requester. Daily 9AM digest also goes to all members.</div>
+    <div class="qr-hint">💡 <strong>What happens next:</strong> Airtable checked for availability → WhatsApp sent to all 3 members simultaneously → request logged in Google Sheets → Gmail confirmation to requester → Google Calendar tentative event created. ⏰ <strong>Weekly cron</strong>: SerpAPI fetches book news → Groq AI generates curated HTML digest → sent via Gmail to the team.</div>
   </div>
 
   <!-- QUICK REFERENCE TABLE -->
@@ -562,8 +562,8 @@
         </tr>
         <tr style="background:rgba(212,163,115,0.07);">
           <td style="padding:12px 16px;font-weight:700;">📱 Team Hub</td>
-          <td style="padding:12px 16px;">Book requests via WhatsApp</td>
-          <td style="padding:12px 16px;"><span class="badge">Form</span></td>
+          <td style="padding:12px 16px;">Book requests + weekly news digest</td>
+          <td style="padding:12px 16px;"><span class="badge">Form</span> <span class="badge">Cron</span></td>
           <td style="padding:12px 16px;font-family:monospace;font-size:0.76rem;">d18624cb-…-bffc5ddf3fe5</td>
         </tr>
       </tbody>
