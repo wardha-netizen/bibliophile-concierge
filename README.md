@@ -33,12 +33,24 @@ The entire system lives in **one importable JSON** — all four sub-flows, all A
 https://raw.githubusercontent.com/wardha-netizen/bibliophile-concierge/main/bibliophile-concierge-complete.json
 ```
 
-| Sub-Flow | Purpose | Entry Point | Webhook ID |
+**74 nodes total · 4 form triggers · 5 scheduled crons · 17+ integrations**
+
+| Sub-Flow | Purpose | Triggers | Webhook ID |
 |---|---|---|---|
-| 📖 Acquisition | Add books (multilingual) | Form trigger | `6b4f9f6a-…-332547cc6f00` |
-| 📊 Inventory | Issue / return + daily weather suggestion | Form + Cron | `ff3c257e-…-1a72ed65c511` |
-| 🔍 Engagement | Semantic search + auto-archive | Form + Cron | `fd79b2ae-…-beaa417e16ca` |
-| 📱 Team Hub | WhatsApp book requests + daily digest | Form + Cron | `d18624cb-…-bffc5ddf3fe5` |
+| 📖 Acquisition | Add books (multilingual) — Gemini AI classifies genre & plant spirit | Form | `6b4f9f6a-…-332547cc6f00` |
+| 📊 Inventory | Issue / return + daily weather suggestion + overdue alerts | Form + 2 Crons | `ff3c257e-…-1a72ed65c511` |
+| 🔍 Engagement | Semantic search + daily quote + evening auto-archive to GitHub | Form + 2 Crons | `fd79b2ae-…-beaa417e16ca` |
+| 📱 Team Hub | WhatsApp book requests + weekly literary news digest via SerpAPI + Groq | Form + 1 Cron | `d18624cb-…-bffc5ddf3fe5` |
+
+**Scheduled Automations (5 crons):**
+
+| Cron | Time | What it does |
+|---|---|---|
+| ⏰ Daily Overdue Check | Daily | Scans Airtable for overdue books → Gmail + Discord alert |
+| 🌅 Daily 8AM Trigger | Daily 8AM | Groq AI quote → Gmail "Water Your Mind" + Discord |
+| ⏰ Daily 9AM acc to Weather | Daily 9AM | OpenWeatherMap → genre pick → Discord suggestion |
+| 🌙 Evening Completed Check | Evening | Archive completed books → GitHub + Sheets + YouTube |
+| ⏰ Weekly News & Updates | Weekly | SerpAPI search → Groq AI digest → Gmail HTML email |
 
 ---
 
@@ -60,7 +72,10 @@ Base ID:  apptGlLDt9VHCE9ey
 Table ID: tblENLBbFVBYaEahV  (Books)
 ```
 
-### 4. Groq AI (OpenAI-compatible, free)
+### 4. Google Gemini AI
+Credentials → New → **Google Gemini(PaLM) Api** → paste your Gemini API key from [aistudio.google.com](https://aistudio.google.com/apikey). Used for genre + plant spirit classification in Sub-Flow 1 (3 nodes).
+
+### 5. Groq AI (OpenAI-compatible, free)
 Credentials → New → **OpenAI**
 
 ```
@@ -68,6 +83,9 @@ Base URL:  https://api.groq.com/openai/v1
 API Key:   your key from console.groq.com
 Model:     llama-3.3-70b-versatile
 ```
+
+### 5b. SerpAPI (free tier)
+Credentials → New → **SerpAPI** → paste your API key from [serpapi.com](https://serpapi.com). Used in Sub-Flow 4 Weekly News cron (100 free searches/month).
 
 ### 5. GitHub PAT
 GitHub → Settings → Developer Settings → Fine-grained PATs → create a token with **Contents: Read & Write** on this repo.
@@ -106,12 +124,15 @@ Toggle the workflow **Active** in n8n. Share the form URLs with your team:
 
 | Service | Role |
 |---|---|
-| **n8n** (Railway Cloud) | Workflow automation engine |
-| **Groq AI** — Llama 3.3 70B | Genre classification, AI summaries, search ranking |
+| **n8n** (Railway Cloud) | Workflow automation engine — 74 nodes |
+| **Google Gemini AI** | Genre classification + plant spirit (3 nodes, Sub-Flow 1) |
+| **Groq AI** — Llama 3.3 70B | Summaries, search ranking, weekly news digest (Sub-Flows 3 & 4) |
+| **SerpAPI** | Google web search for weekly literary news (Sub-Flow 4) |
 | **Airtable** | Primary book database (`apptGlLDt9VHCE9ey`) |
 | **Google Sheets** | Backup + archive logs (`Bibliophile Vault`) |
 | **Gmail** | Overdue alerts, search results, daily quotes |
-| **Google Calendar** | Return-date reminders |
+| **Google Calendar** | Return-date reminders + weekly event (Sub-Flows 2 & 4) |
+| **Google Tasks** | Task reminder on book issue (Sub-Flow 2) |
 | **Google Drive** | PDF document search |
 | **Google Books API** | Book metadata + cover images |
 | **Open Library API** | Cover image fallback (no key needed) |
