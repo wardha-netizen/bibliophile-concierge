@@ -1,226 +1,614 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Bibliophile Concierge — Architecture</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: 'Georgia', serif;
-    background: linear-gradient(135deg, #fef6e4 0%, #f3d2c1 100%);
-    color: #4a2f1a;
-    padding: 32px 24px;
-  }
-  h1 { text-align: center; font-size: 32px; margin: 0 0 4px; color: #6b4226; }
-  .sub { text-align: center; color: #8a6a4d; margin-bottom: 28px; font-style: italic; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌿 Bibliophile Concierge — Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #fef6e4; --sand: #f3d2c1; --brown: #6b4226; --tanbrown: #9b7b5a;
+      --gold: #d4a373; --green: #4a7c59; --softgreen: #7a9e7e; --white: #fffaf0;
+    }
+    body {
+      background: linear-gradient(160deg, var(--cream) 0%, #e8f5e9 60%, var(--sand) 100%);
+      font-family: 'Lato', sans-serif;
+      color: var(--brown);
+      min-height: 100vh;
+    }
 
-  .legend {
-    display: flex; justify-content: center; flex-wrap: wrap; gap: 16px;
-    margin-bottom: 28px;
-  }
-  .legend span {
-    background: #fffaf0; padding: 6px 14px; border-radius: 999px;
-    border: 1px solid #d4a373; font-size: 13px;
-  }
+    /* NAV */
+    nav {
+      background: var(--brown);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(107,66,38,0.25);
+    }
+    .nav-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+      text-decoration: none;
+      padding: 18px 0;
+      margin-right: 32px;
+    }
+    nav a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 20px 16px;
+      transition: color .2s;
+      letter-spacing: .5px;
+    }
+    nav a:hover, nav a.active { color: var(--gold); }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    max-width: 1500px;
-    margin: 0 auto;
-  }
-  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+    /* PAGE HERO */
+    .page-hero {
+      text-align: center;
+      padding: 56px 24px 40px;
+      background: linear-gradient(160deg, rgba(254,246,228,.96) 0%, rgba(232,245,233,.96) 100%);
+      border-bottom: 2px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a373' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: linear-gradient(135deg,#1a6b3a,#27ae60);
+      color:#fff; font-size:12px; font-weight:700;
+      padding:5px 16px; border-radius:999px; margin-bottom:18px; text-decoration:none;
+    }
+    .live-dot {
+      width:7px;height:7px;border-radius:50%;background:#7fffb2;
+      animation:pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--brown);
+      margin-bottom: 12px;
+    }
+    .page-hero h1 em { color: var(--green); font-style: italic; }
+    .page-hero p { color: var(--tanbrown); font-size: 1rem; max-width: 580px; margin: 0 auto; line-height: 1.7; }
 
-  .member {
-    background: #fffaf0;
-    border: 2px solid #d4a373;
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 8px 24px rgba(120,80,40,0.12);
-  }
-  .member h2 { margin-top: 0; color: #6b4226; font-size: 20px; border-bottom: 2px dashed #d4a373; padding-bottom: 8px; }
-  .member .role { font-size: 13px; color: #8a6a4d; font-style: italic; margin-bottom: 14px; }
+    /* LEGEND */
+    .legend {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 12px;
+      padding: 24px;
+      background: rgba(255,250,240,0.7);
+      border-bottom: 1px solid var(--gold);
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--white); padding: 6px 14px;
+      border-radius: 999px; border: 1px solid var(--gold);
+      font-size: 12px; font-weight: 600; color: var(--brown);
+    }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
 
-  .flow { display: flex; flex-direction: column; gap: 8px; }
-  .step {
-    display: flex; align-items: center; gap: 10px;
-    background: #fef6e4; border-left: 4px solid #7a9e7e;
-    padding: 10px 12px; border-radius: 8px; font-size: 13px;
-  }
-  .step.trigger { border-left-color: #e76f51; }
-  .step.ai { border-left-color: #b08968; }
-  .step.notify { border-left-color: #7a9e7e; }
-  .step.store { border-left-color: #4a7c59; }
-  .step.fetch { border-left-color: #d4a373; }
+    /* CONTENT */
+    .content { max-width: 1200px; margin: 0 auto; padding: 48px 24px; }
 
-  .icon { font-size: 18px; width: 24px; text-align: center; }
-  .label { flex: 1; }
-  .app { font-weight: bold; color: #6b4226; }
-  .desc { display: block; font-size: 11px; color: #8a6a4d; margin-top: 2px; }
+    /* TOP FLOW DIAGRAM */
+    .flow-diagram {
+      background: var(--white);
+      border: 1.5px solid var(--gold);
+      border-radius: 20px;
+      padding: 36px 24px;
+      margin-bottom: 48px;
+      box-shadow: 0 6px 24px rgba(107,66,38,0.09);
+      text-align: center;
+    }
+    .flow-diagram h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--brown);
+      margin-bottom: 6px;
+    }
+    .flow-diagram p { font-size: 0.88rem; color: var(--tanbrown); margin-bottom: 28px; }
+    .flow-row {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 0; margin-bottom: 12px;
+    }
+    .flow-box {
+      background: linear-gradient(135deg, var(--cream), var(--white));
+      border: 1.5px solid var(--gold);
+      border-radius: 12px;
+      padding: 14px 18px;
+      min-width: 100px;
+      text-align: center;
+    }
+    .flow-box .fb-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    .flow-box .fb-label { font-size: 0.75rem; font-weight: 700; color: var(--brown); }
+    .flow-arrow { font-size: 20px; color: var(--gold); padding: 0 8px; }
 
-  .arrow { text-align: center; color: #d4a373; font-size: 16px; margin: -2px 0; }
+    /* SECTION HEADING */
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; color: var(--brown); margin-bottom: 6px;
+    }
+    .divider {
+      width: 50px; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--softgreen));
+      margin: 10px 0 28px; border-radius: 3px;
+    }
 
-  .apps-bar {
-    margin-top: 32px; padding: 20px; background: #fffaf0;
-    border: 2px dashed #d4a373; border-radius: 16px;
-    max-width: 1500px; margin-left: auto; margin-right: auto;
-  }
-  .apps-bar h3 { margin: 0 0 12px; color: #6b4226; text-align: center; }
-  .apps {
-    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
-  }
-  .app-chip {
-    background: #fef6e4; padding: 6px 12px; border-radius: 999px;
-    border: 1px solid #d4a373; font-size: 12px;
-  }
-  footer { text-align: center; margin-top: 24px; color: #8a6a4d; font-size: 12px; }
-</style>
+    /* 4-COLUMN GRID */
+    .subflow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    /* SUBFLOW CARD */
+    .sf-card {
+      background: var(--white);
+      border: 1.5px solid var(--gold);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(107,66,38,0.09);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .sf-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 18px;
+    }
+    .sf-icon {
+      width: 50px; height: 50px; flex-shrink: 0;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .c1{background:linear-gradient(135deg,#fff3e0,#ffe0b2);}
+    .c2{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);}
+    .c3{background:linear-gradient(135deg,#e3f2fd,#bbdefb);}
+    .c4{background:linear-gradient(135deg,#f3e5f5,#e1bee7);}
+
+    .sf-header-text .sf-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--softgreen); margin-bottom: 3px;
+    }
+    .sf-header-text h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; color: var(--brown); line-height: 1.3;
+    }
+
+    /* STEP LIST */
+    .step-list { display: flex; flex-direction: column; gap: 0; }
+    .arch-step {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(212,163,115,0.2);
+      font-size: 0.83rem;
+    }
+    .arch-step:last-child { border-bottom: none; }
+    .step-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .dot-trigger { background: #e76f51; }
+    .dot-fetch   { background: #d4a373; }
+    .dot-ai      { background: #b08968; }
+    .dot-store   { background: #4a7c59; }
+    .dot-notify  { background: #7a9e7e; }
+    .dot-cron    { background: #8b6fa8; }
+
+    .step-content { flex: 1; }
+    .step-app { font-weight: 700; color: var(--brown); }
+    .step-desc { font-size: 0.76rem; color: var(--tanbrown); margin-top: 1px; }
+    .step-arrow { text-align: center; color: var(--gold); font-size: 12px; padding: 2px 0 2px 20px; }
+
+    .sf-divider {
+      height: 1px; background: var(--gold);
+      margin: 12px 0; opacity: 0.4;
+    }
+
+    /* DATA FLOW TABLE */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1.5px solid var(--gold);
+      box-shadow: 0 4px 16px rgba(107,66,38,0.08);
+      margin-bottom: 48px;
+      font-size: 0.84rem;
+    }
+    .data-table thead th {
+      background: var(--brown);
+      color: var(--gold);
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .data-table tbody td {
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(212,163,115,0.25);
+      color: var(--brown);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:nth-child(even) { background: rgba(254,246,228,0.5); }
+    .badge {
+      display: inline-block;
+      background: var(--cream); border: 1px solid var(--gold);
+      border-radius: 999px; padding: 2px 10px;
+      font-size: 0.73rem; font-weight: 700; color: var(--brown);
+      margin: 1px 2px;
+    }
+
+    /* APPS GRID */
+    .apps-section {
+      background: var(--white);
+      border: 1.5px dashed var(--gold);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 16px;
+    }
+    .apps-section h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; color: var(--brown);
+      text-align: center; margin-bottom: 20px;
+    }
+    .apps-grid {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    }
+    .app-chip {
+      background: var(--cream); padding: 6px 14px;
+      border-radius: 999px; border: 1px solid var(--gold);
+      font-size: 12px; font-weight: 600; color: var(--brown);
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 36px 24px;
+      background: var(--brown);
+      color: rgba(255,255,255,0.6); font-size: 13px;
+    }
+    footer strong { color: var(--gold); }
+    footer a { color: var(--softgreen); text-decoration: none; }
+
+    @media(max-width:700px){
+      .flow-row { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+    }
+  </style>
 </head>
 <body>
 
-<h1>🌿 Bibliophile Concierge — Architecture 🌿</h1>
-<p class="sub">A 24-app, 3-workflow library system in n8n · "Tangled" cartoon-garden theme</p>
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">🌿 Bibliophile Concierge</a>
+  <a href="index.html">Home</a>
+  <a href="workflows.html">Workflows</a>
+  <a href="architecture.html" class="active">Architecture</a>
+  <a href="https://github.com/wardha-netizen/bibliophile-concierge" target="_blank" rel="noopener">GitHub</a>
+</nav>
 
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <a href="https://n8n-production-a7830.up.railway.app/workflow/M25bDNquM81jUjQh" target="_blank" rel="noopener" class="live-pill">
+    <span class="live-dot"></span> Live on Railway
+  </a>
+  <h1>System <em>Architecture</em></h1>
+  <p>One combined n8n workflow with four distinct sub-flows — every node, every app, every data path explained.</p>
+</div>
+
+<!-- LEGEND -->
 <div class="legend">
-  <span style="border-left:4px solid #e76f51">🔴 Trigger (start)</span>
-  <span style="border-left:4px solid #d4a373">🟠 Fetch / lookup</span>
-  <span style="border-left:4px solid #b08968">🟤 AI brain (Groq)</span>
-  <span style="border-left:4px solid #4a7c59">🟢 Store / log</span>
-  <span style="border-left:4px solid #7a9e7e">💬 Notify / post</span>
+  <div class="legend-item"><div class="legend-dot" style="background:#8b6fa8"></div> Scheduled Cron</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e76f51"></div> Form Trigger</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#d4a373"></div> Fetch / Lookup</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#b08968"></div> AI (Groq LLM)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4a7c59"></div> Store / Write</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7a9e7e"></div> Notify / Send</div>
 </div>
 
-<div class="grid">
+<div class="content">
 
-  <!-- MEMBER 1 -->
-  <div class="member">
-    <h2>📖 Member 1 — Acquisition & Multi-Lingual Librarian</h2>
-    <div class="role">Brings new books in, detects language, applies the cartoon "plant spirit" theme.</div>
-    <div class="flow">
-      <div class="step trigger"><span class="icon">📝</span><span class="label"><span class="app">n8n Form</span><span class="desc">User submits book title (any language)</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step fetch"><span class="icon">📚</span><span class="label"><span class="app">Google Books + Open Library</span><span class="desc">Look up author, ISBN, summary (parallel)</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step fetch"><span class="icon">🌐</span><span class="label"><span class="app">Google Translate</span><span class="desc">Detect language of title</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM (free)</span><span class="desc">Genre + Plant Spirit + price estimate</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step fetch"><span class="icon">🎨</span><span class="label"><span class="app">Unsplash → Cloudinary</span><span class="desc">Cartoon cover image, hosted</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step store"><span class="icon">🌱</span><span class="label"><span class="app">Airtable + Google Sheets</span><span class="desc">Primary vault + backup row</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step notify"><span class="icon">💬</span><span class="label"><span class="app">WhatsApp</span><span class="desc">"Planting Confirmation" message</span></span></div>
+  <!-- TOP-LEVEL FLOW DIAGRAM -->
+  <div class="flow-diagram">
+    <h2>Overall Data Flow</h2>
+    <p>Every sub-flow converges on the same data spine — Airtable as the source of truth, Google Sheets as backup, and multi-channel notification on every event.</p>
+    <div class="flow-row">
+      <div class="flow-box"><span class="fb-icon">📋</span><span class="fb-label">n8n Form / Cron</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><span class="fb-icon">📚</span><span class="fb-label">Google Books / Open Library</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><span class="fb-icon">🤖</span><span class="fb-label">Groq AI (Llama 3.3)</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><span class="fb-icon">🗃️</span><span class="fb-label">Airtable Vault</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><span class="fb-icon">📊</span><span class="fb-label">Google Sheets Backup</span></div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box"><span class="fb-icon">💬</span><span class="fb-label">Discord</span></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-box"><span class="fb-icon">📧</span><span class="fb-label">Gmail</span></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-box"><span class="fb-icon">📱</span><span class="fb-label">WhatsApp</span></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-box"><span class="fb-icon">📅</span><span class="fb-label">Google Calendar</span></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-box"><span class="fb-icon">🐙</span><span class="fb-label">GitHub Archive</span></div>
     </div>
   </div>
 
-  <!-- MEMBER 2 -->
-  <div class="member">
-    <h2>📚 Member 2 — Inventory & Loan Manager</h2>
-    <div class="role">Tracks who has which book, weather-based suggestions, overdue nudges.</div>
+  <!-- 4 SUBFLOW CARDS -->
+  <h2 class="section-heading">The Four Sub-Flows</h2>
+  <p style="color:var(--tanbrown);font-size:0.92rem;margin-bottom:16px;line-height:1.6;">All four live inside one n8n workflow (ID: <code style="background:var(--cream);padding:2px 8px;border-radius:6px;border:1px solid var(--gold);font-size:0.82rem;">M25bDNquM81jUjQh</code>) and share the same Airtable base and Google credentials.</p>
+  <div class="divider"></div>
 
-    <div class="flow">
-      <div class="step trigger"><span class="icon">📝</span><span class="label"><span class="app">n8n Loan Form</span><span class="desc">Issue or Return a book</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step store"><span class="icon">🔎</span><span class="label"><span class="app">Airtable</span><span class="desc">Update Status: Issued / Available</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step notify"><span class="icon">📅</span><span class="label"><span class="app">Google Calendar + Todoist</span><span class="desc">Return-date reminder</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step store"><span class="icon">📒</span><span class="label"><span class="app">Google Sheets</span><span class="desc">Loan log (backup)</span></span></div>
+  <div class="subflow-grid">
+
+    <!-- SF1 -->
+    <div class="sf-card">
+      <div class="sf-header">
+        <div class="sf-icon c1">📖</div>
+        <div class="sf-header-text">
+          <div class="sf-label">Sub-Flow 1</div>
+          <h3>Acquisition &amp; Multilingual Librarian</h3>
+        </div>
+      </div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-trigger"></div><div class="step-content"><div class="step-app">📋 n8n Form Trigger</div><div class="step-desc">User submits book (English / Urdu / Arabic)</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">📚 Google Books API</div><div class="step-desc">Fetch metadata, cover thumbnail</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🏛️ Open Library API</div><div class="step-desc">Parallel cover fallback via ISBN</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🌐 Language Detection</div><div class="step-desc">Unicode range check (no paid API)</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-ai"></div><div class="step-content"><div class="step-app">🤖 Groq AI — Llama 3.3</div><div class="step-desc">Genre + plant spirit + AI metadata enrichment</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">🌱 Airtable — Books Table</div><div class="step-desc">Create record with all 20+ fields</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">📊 Google Sheets — Bibliophile Vault</div><div class="step-desc">Append backup row</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">💬 Discord Webhook</div><div class="step-desc">Rich embed — new book planted 🌱</div></div></div>
+      </div>
     </div>
 
-    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
-
-    <div class="flow">
-      <div class="step trigger"><span class="icon">⏰</span><span class="label"><span class="app">Daily 9 AM cron</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step fetch"><span class="icon">🌤️</span><span class="label"><span class="app">OpenWeatherMap</span><span class="desc">Cloudy = Poetry day, Sunny = Adventure...</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step notify"><span class="icon">✈️</span><span class="label"><span class="app">Telegram</span><span class="desc">"Today's suggestion from your Poetry shelf"</span></span></div>
+    <!-- SF2 -->
+    <div class="sf-card">
+      <div class="sf-header">
+        <div class="sf-icon c2">📊</div>
+        <div class="sf-header-text">
+          <div class="sf-label">Sub-Flow 2</div>
+          <h3>Inventory &amp; Loan Manager</h3>
+        </div>
+      </div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-trigger"></div><div class="step-content"><div class="step-app">📋 n8n Loan Form</div><div class="step-desc">Issue or Return action selected</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">🗃️ Airtable — Update Lending Status</div><div class="step-desc">Available ↔ Issued</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📅 Google Calendar</div><div class="step-desc">Tentative return-date event created</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">📊 Google Sheets — Loans Log</div><div class="step-desc">Append loan transaction row</div></div></div>
+      </div>
+      <div class="sf-divider"></div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-cron"></div><div class="step-content"><div class="step-app">⏰ Daily 9AM Cron</div><div class="step-desc">Automatic weather-based book suggestion</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🌤️ OpenWeatherMap — Karachi</div><div class="step-desc">Current conditions → genre mapping</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🌸 Pick Available Book</div><div class="step-desc">Airtable query filtered by genre</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">💬 Discord Daily Suggestion</div><div class="step-desc">"Rainy day? Read some Poetry 📖"</div></div></div>
+      </div>
+      <div class="sf-divider"></div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-cron"></div><div class="step-content"><div class="step-app">⏰ Daily Overdue Check</div><div class="step-desc">Scans all Issued books past due date</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📧 Gmail — Overdue Alert</div><div class="step-desc">HTML email to borrower</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">💬 Discord Ping</div><div class="step-desc">Team notification with list of overdue books</div></div></div>
+      </div>
     </div>
 
-    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
+    <!-- SF3 -->
+    <div class="sf-card">
+      <div class="sf-header">
+        <div class="sf-icon c3">🔍</div>
+        <div class="sf-header-text">
+          <div class="sf-label">Sub-Flow 3</div>
+          <h3>Engagement &amp; Semantic Search</h3>
+        </div>
+      </div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-cron"></div><div class="step-content"><div class="step-app">🌅 Daily 8AM Cron</div><div class="step-desc">"Water Your Mind" motivational quote</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-ai"></div><div class="step-content"><div class="step-app">🤖 Groq AI — Generate Quote</div><div class="step-desc">Unique daily literary quote</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📧 Gmail + 💬 Discord</div><div class="step-desc">Beautifully formatted daily quote</div></div></div>
+      </div>
+      <div class="sf-divider"></div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-trigger"></div><div class="step-content"><div class="step-app">🔍 Book Search Form</div><div class="step-desc">User types quote / character / topic</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🗃️ Airtable Semantic Search</div><div class="step-desc">Searches Notes, Summary, Title (parallel)</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">📁 Google Drive PDF Search</div><div class="step-desc">Full-text search across uploaded PDFs</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-ai"></div><div class="step-content"><div class="step-app">🤖 Groq AI — Merge &amp; Rank</div><div class="step-desc">LLM consolidates and scores results</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📧 Gmail — Results Email</div><div class="step-desc">Formatted results delivered instantly</div></div></div>
+      </div>
+      <div class="sf-divider"></div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-cron"></div><div class="step-content"><div class="step-app">🌙 Evening Archive Cron</div><div class="step-desc">Finds Airtable books marked "Completed"</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-ai"></div><div class="step-content"><div class="step-app">🤖 Groq AI — Generate Summary</div><div class="step-desc">AI-written book summary + tags</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">▶️ YouTube Search API</div><div class="step-desc">Find related book discussion video</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">🐙 GitHub — Push Markdown</div><div class="step-desc">Archive_YYYY-MM-DD.md committed</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">📒 Google Sheets — Archive Log</div><div class="step-desc">AI Summary + GitHub link + YouTube</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">✅ Airtable — Mark Archived</div><div class="step-desc">Is Archived checkbox set to true</div></div></div>
+      </div>
+    </div>
 
-    <div class="flow">
-      <div class="step trigger"><span class="icon">⏰</span><span class="label"><span class="app">Daily overdue check</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step notify"><span class="icon">📨</span><span class="label"><span class="app">Telegram (friend) + Discord (you)</span><span class="desc">Polite nudges</span></span></div>
+    <!-- SF4 -->
+    <div class="sf-card">
+      <div class="sf-header">
+        <div class="sf-icon c4">📱</div>
+        <div class="sf-header-text">
+          <div class="sf-label">Sub-Flow 4</div>
+          <h3>WhatsApp Team Hub</h3>
+        </div>
+      </div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-trigger"></div><div class="step-content"><div class="step-app">📋 Book Request Form</div><div class="step-desc">Member requests a book to borrow</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🔎 Airtable — Check Availability</div><div class="step-desc">Is lending status "Available"?</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📱 WhatsApp — Wardha</div><div class="step-desc">Request notification via Cloud API</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📱 WhatsApp — Member 1</div><div class="step-desc">Same request notification</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📱 WhatsApp — Member 2</div><div class="step-desc">Same request notification</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">📒 Google Sheets — Log Request</div><div class="step-desc">All requests tracked in Sheets</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📧 Gmail — Confirmation</div><div class="step-desc">Sent to requester with status</div></div></div>
+      </div>
+      <div class="sf-divider"></div>
+      <div class="step-list">
+        <div class="arch-step"><div class="step-dot dot-cron"></div><div class="step-content"><div class="step-app">⏰ Daily 9AM Team Digest</div><div class="step-desc">Auto-sent to all 3 WhatsApp numbers</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🗃️ Airtable — Daily Stats</div><div class="step-desc">Total books, issued count, who has what</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📱 WhatsApp Broadcast</div><div class="step-desc">"Good morning! 📚 Library digest..."</div></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DATA STORES TABLE -->
+  <h2 class="section-heading">Data Stores &amp; Services</h2>
+  <div class="divider"></div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Role</th>
+        <th>Used By</th>
+        <th>Key</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>🗃️ Airtable</strong> — Bibliophile base</td>
+        <td>Primary source of truth for all books</td>
+        <td><span class="badge">SF1</span><span class="badge">SF2</span><span class="badge">SF3</span><span class="badge">SF4</span></td>
+        <td style="font-family:monospace;font-size:0.76rem;">apptGlLDt9VHCE9ey</td>
+      </tr>
+      <tr>
+        <td><strong>📊 Google Sheets</strong> — Bibliophile Vault</td>
+        <td>Backup + Archive Logs Form sheet</td>
+        <td><span class="badge">SF1</span><span class="badge">SF2</span><span class="badge">SF3</span><span class="badge">SF4</span></td>
+        <td style="font-family:monospace;font-size:0.76rem;">1uAE8q1EjdE__pLJ…</td>
+      </tr>
+      <tr>
+        <td><strong>🤖 Groq AI</strong> — Llama 3.3 70B</td>
+        <td>Genre, plant spirit, summaries, search ranking</td>
+        <td><span class="badge">SF1</span><span class="badge">SF3</span></td>
+        <td>OpenAI-compatible API at api.groq.com</td>
+      </tr>
+      <tr>
+        <td><strong>📧 Gmail + Google OAuth</strong></td>
+        <td>Overdue alerts, search results, quotes, confirmations</td>
+        <td><span class="badge">SF2</span><span class="badge">SF3</span><span class="badge">SF4</span></td>
+        <td>Single OAuth covers Gmail / Sheets / Drive / Calendar</td>
+      </tr>
+      <tr>
+        <td><strong>📅 Google Calendar</strong></td>
+        <td>Return-date reminders as tentative events</td>
+        <td><span class="badge">SF2</span></td>
+        <td>Google OAuth (same credential)</td>
+      </tr>
+      <tr>
+        <td><strong>📁 Google Drive</strong></td>
+        <td>PDF document search for semantic queries</td>
+        <td><span class="badge">SF3</span></td>
+        <td>Google OAuth (same credential)</td>
+      </tr>
+      <tr>
+        <td><strong>🐙 GitHub REST API</strong></td>
+        <td>Push archive markdown files to repo</td>
+        <td><span class="badge">SF3</span></td>
+        <td>Fine-grained PAT — Contents: Read &amp; Write</td>
+      </tr>
+      <tr>
+        <td><strong>📱 WhatsApp Cloud API</strong></td>
+        <td>Book request alerts, daily digest to all 3 members</td>
+        <td><span class="badge">SF4</span></td>
+        <td>Meta for Developers — free 1k convos/month</td>
+      </tr>
+      <tr>
+        <td><strong>💬 Discord Webhooks</strong></td>
+        <td>New book announcements, weather suggestions, overdue pings</td>
+        <td><span class="badge">SF1</span><span class="badge">SF2</span><span class="badge">SF3</span></td>
+        <td>Channel webhook URL</td>
+      </tr>
+      <tr>
+        <td><strong>🌤️ OpenWeatherMap</strong></td>
+        <td>Daily weather → genre suggestion mapping</td>
+        <td><span class="badge">SF2</span></td>
+        <td>Free API — 1k calls/day</td>
+      </tr>
+      <tr>
+        <td><strong>▶️ YouTube Data API v3</strong></td>
+        <td>Find video highlights for archived books</td>
+        <td><span class="badge">SF3</span></td>
+        <td>Google Cloud — free quota</td>
+      </tr>
+      <tr>
+        <td><strong>📚 Google Books + 🏛️ Open Library</strong></td>
+        <td>Book metadata, cover images (parallel lookup)</td>
+        <td><span class="badge">SF1</span></td>
+        <td>No API key required (public)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- APPS CHECKLIST -->
+  <div class="apps-section">
+    <h3>🪴 All Integrations Used</h3>
+    <div class="apps-grid">
+      <span class="app-chip">1. n8n Forms</span>
+      <span class="app-chip">2. Airtable</span>
+      <span class="app-chip">3. Google Sheets</span>
+      <span class="app-chip">4. Google Books</span>
+      <span class="app-chip">5. Open Library</span>
+      <span class="app-chip">6. Groq AI (Llama 3.3)</span>
+      <span class="app-chip">7. Gmail</span>
+      <span class="app-chip">8. Google Drive</span>
+      <span class="app-chip">9. Google Calendar</span>
+      <span class="app-chip">10. WhatsApp Cloud API</span>
+      <span class="app-chip">11. Discord Webhooks</span>
+      <span class="app-chip">12. GitHub REST API</span>
+      <span class="app-chip">13. OpenWeatherMap</span>
+      <span class="app-chip">14. YouTube Data API v3</span>
+      <span class="app-chip">15. Railway Cloud (hosting)</span>
     </div>
   </div>
 
-  <!-- MEMBER 3 -->
-  <div class="member">
-    <h2>✨ Member 3 — Engagement & Semantic Search</h2>
-    <div class="role">Daily motivation, "search inside" books, social archiving.</div>
-
-    <div class="flow">
-      <div class="step trigger"><span class="icon">🌅</span><span class="label"><span class="app">Daily 8 AM cron</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM</span><span class="desc">Quote + unique code</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step notify"><span class="icon">📧</span><span class="label"><span class="app">Gmail + Telegram</span><span class="desc">"Water Your Mind" message</span></span></div>
-    </div>
-
-    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
-
-    <div class="flow">
-      <div class="step trigger"><span class="icon">🔍</span><span class="label"><span class="app">Telegram bot message</span><span class="desc">User types a quote or character</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step fetch"><span class="icon">📁</span><span class="label"><span class="app">Airtable Notes + Google Drive PDFs</span><span class="desc">Parallel search</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM</span><span class="desc">Summarize matches</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step notify"><span class="icon">✈️</span><span class="label"><span class="app">Telegram reply</span></span></div>
-    </div>
-
-    <hr style="border:none;border-top:1px dashed #d4a373;margin:14px 0">
-
-    <div class="flow">
-      <div class="step trigger"><span class="icon">🌙</span><span class="label"><span class="app">Evening cron</span><span class="desc">Find books marked "Completed"</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step ai"><span class="icon">🤖</span><span class="label"><span class="app">Groq LLM</span><span class="desc">Generate captions / summary / tags</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step notify"><span class="icon">🌐</span><span class="label"><span class="app">Instagram · LinkedIn · GitHub · Pinterest · YouTube · Spotify</span><span class="desc">Multi-channel archive</span></span></div>
-      <div class="arrow">↓</div>
-      <div class="step store"><span class="icon">📦</span><span class="label"><span class="app">Dropbox + Microsoft Excel</span><span class="desc">Backup &amp; report log</span></span></div>
-    </div>
-  </div>
-
-</div>
-
-<div class="apps-bar">
-  <h3>🪴 All 24 Apps Used (teacher's checklist) 🪴</h3>
-  <div class="apps">
-    <span class="app-chip">1. n8n Forms</span>
-    <span class="app-chip">2. Airtable</span>
-    <span class="app-chip">3. Google Sheets</span>
-    <span class="app-chip">4. Google Books</span>
-    <span class="app-chip">5. Open Library</span>
-    <span class="app-chip">6. OpenAI (Groq)</span>
-    <span class="app-chip">7. Google Translate</span>
-    <span class="app-chip">8. WhatsApp</span>
-    <span class="app-chip">9. Telegram</span>
-    <span class="app-chip">10. Gmail</span>
-    <span class="app-chip">11. Google Drive</span>
-    <span class="app-chip">12. Dropbox</span>
-    <span class="app-chip">13. Cloudinary</span>
-    <span class="app-chip">14. Unsplash</span>
-    <span class="app-chip">15. Todoist</span>
-    <span class="app-chip">16. Google Calendar</span>
-    <span class="app-chip">17. Spotify</span>
-    <span class="app-chip">18. YouTube</span>
-    <span class="app-chip">19. Instagram</span>
-    <span class="app-chip">20. LinkedIn</span>
-    <span class="app-chip">21. Pinterest</span>
-    <span class="app-chip">22. Discord</span>
-    <span class="app-chip">23. GitHub</span>
-    <span class="app-chip">24. OpenWeatherMap</span>
-    <span class="app-chip">+ Microsoft Excel</span>
-  </div>
 </div>
 
 <footer>
-  Built for n8n self-hosted (free) · LLM via Groq (free) · All other services on free tiers.
+  <p style="font-size:1.3rem;margin-bottom:6px;">🌷</p>
+  <p><strong>Bibliophile Concierge</strong> — Enchanted Library Management System</p>
+  <p style="margin-top:8px;">
+    <a href="index.html">Home</a> &nbsp;·&nbsp;
+    <a href="workflows.html">Workflows</a> &nbsp;·&nbsp;
+    <a href="https://github.com/wardha-netizen/bibliophile-concierge">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://n8n-production-a7830.up.railway.app/workflow/M25bDNquM81jUjQh">Railway n8n</a>
+  </p>
+  <p style="margin-top:10px;font-size:11px;opacity:0.5;">University Project · Automation &amp; AI · 2025</p>
 </footer>
 
 </body>
