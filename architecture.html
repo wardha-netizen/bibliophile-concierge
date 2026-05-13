@@ -318,7 +318,7 @@
   <div class="legend-item"><div class="legend-dot" style="background:#8b6fa8"></div> Scheduled Cron</div>
   <div class="legend-item"><div class="legend-dot" style="background:#e76f51"></div> Form Trigger</div>
   <div class="legend-item"><div class="legend-dot" style="background:#d4a373"></div> Fetch / Lookup</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#b08968"></div> AI (Groq LLM)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#b08968"></div> AI (Gemini / Groq)</div>
   <div class="legend-item"><div class="legend-dot" style="background:#4a7c59"></div> Store / Write</div>
   <div class="legend-item"><div class="legend-dot" style="background:#7a9e7e"></div> Notify / Send</div>
 </div>
@@ -334,7 +334,7 @@
       <div class="flow-arrow">→</div>
       <div class="flow-box"><span class="fb-icon">📚</span><span class="fb-label">Google Books / Open Library</span></div>
       <div class="flow-arrow">→</div>
-      <div class="flow-box"><span class="fb-icon">🤖</span><span class="fb-label">Groq AI (Llama 3.3)</span></div>
+      <div class="flow-box"><span class="fb-icon">🔮</span><span class="fb-label">Gemini AI / Groq LLM</span></div>
       <div class="flow-arrow">→</div>
       <div class="flow-box"><span class="fb-icon">🗃️</span><span class="fb-label">Airtable Vault</span></div>
       <div class="flow-arrow">→</div>
@@ -355,7 +355,7 @@
 
   <!-- 4 SUBFLOW CARDS -->
   <h2 class="section-heading">The Four Sub-Flows</h2>
-  <p style="color:var(--tanbrown);font-size:0.92rem;margin-bottom:16px;line-height:1.6;">All four live inside one n8n workflow (ID: <code style="background:var(--cream);padding:2px 8px;border-radius:6px;border:1px solid var(--gold);font-size:0.82rem;">M25bDNquM81jUjQh</code>) and share the same Airtable base and Google credentials.</p>
+  <p style="color:var(--tanbrown);font-size:0.92rem;margin-bottom:16px;line-height:1.6;">All four live inside one n8n workflow (ID: <code style="background:var(--cream);padding:2px 8px;border-radius:6px;border:1px solid var(--gold);font-size:0.82rem;">M25bDNquM81jUjQh</code>) — <strong>74 nodes</strong>, <strong>4 form triggers</strong>, <strong>5 scheduled crons</strong>, sharing the same Airtable base and Google credentials.</p>
   <div class="divider"></div>
 
   <div class="subflow-grid">
@@ -377,7 +377,7 @@
         <div class="step-arrow">↓</div>
         <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🌐 Language Detection</div><div class="step-desc">Unicode range check (no paid API)</div></div></div>
         <div class="step-arrow">↓</div>
-        <div class="arch-step"><div class="step-dot dot-ai"></div><div class="step-content"><div class="step-app">🤖 Groq AI — Llama 3.3</div><div class="step-desc">Genre + plant spirit + AI metadata enrichment</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-ai"></div><div class="step-content"><div class="step-app">🔮 Google Gemini AI (3 nodes)</div><div class="step-desc">Genre classification + plant spirit assignment</div></div></div>
         <div class="step-arrow">↓</div>
         <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">🌱 Airtable — Books Table</div><div class="step-desc">Create record with all 20+ fields</div></div></div>
         <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">📊 Google Sheets — Bibliophile Vault</div><div class="step-desc">Append backup row</div></div></div>
@@ -400,6 +400,7 @@
         <div class="step-arrow">↓</div>
         <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">🗃️ Airtable — Update Lending Status</div><div class="step-desc">Available ↔ Issued</div></div></div>
         <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📅 Google Calendar</div><div class="step-desc">Tentative return-date event created</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">✅ Google Tasks</div><div class="step-desc">Task reminder created for borrower</div></div></div>
         <div class="arch-step"><div class="step-dot dot-store"></div><div class="step-content"><div class="step-app">📊 Google Sheets — Loans Log</div><div class="step-desc">Append loan transaction row</div></div></div>
       </div>
       <div class="sf-divider"></div>
@@ -478,10 +479,13 @@
       </div>
       <div class="sf-divider"></div>
       <div class="step-list">
-        <div class="arch-step"><div class="step-dot dot-cron"></div><div class="step-content"><div class="step-app">⏰ Daily 9AM Team Digest</div><div class="step-desc">Auto-sent to all 3 WhatsApp numbers</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-cron"></div><div class="step-content"><div class="step-app">⏰ Weekly News &amp; Updates Cron</div><div class="step-desc">Every week — literary news digest</div></div></div>
         <div class="step-arrow">↓</div>
-        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🗃️ Airtable — Daily Stats</div><div class="step-desc">Total books, issued count, who has what</div></div></div>
-        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📱 WhatsApp Broadcast</div><div class="step-desc">"Good morning! 📚 Library digest..."</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-fetch"></div><div class="step-content"><div class="step-app">🔍 SerpAPI — Google Search</div><div class="step-desc">Fetches latest book / literary news</div></div></div>
+        <div class="step-arrow">↓</div>
+        <div class="arch-step"><div class="step-dot dot-ai"></div><div class="step-content"><div class="step-app">🤖 Groq AI — Llama 3.3 (LLM Chain)</div><div class="step-desc">Writes curated HTML news digest</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📧 Gmail — Literary Digest Email</div><div class="step-desc">Beautiful HTML email sent to team</div></div></div>
+        <div class="arch-step"><div class="step-dot dot-notify"></div><div class="step-content"><div class="step-app">📅 Google Calendar — Tentative Event</div><div class="step-desc">Book-related event logged on calendar</div></div></div>
       </div>
     </div>
 
@@ -513,10 +517,22 @@
         <td style="font-family:monospace;font-size:0.76rem;">1uAE8q1EjdE__pLJ…</td>
       </tr>
       <tr>
+        <td><strong>🔮 Google Gemini AI</strong></td>
+        <td>Genre classification + plant spirit (3 nodes in SF1)</td>
+        <td><span class="badge">SF1</span></td>
+        <td>Google Cloud — Gemini API key</td>
+      </tr>
+      <tr>
         <td><strong>🤖 Groq AI</strong> — Llama 3.3 70B</td>
-        <td>Genre, plant spirit, summaries, search ranking</td>
-        <td><span class="badge">SF1</span><span class="badge">SF3</span></td>
+        <td>Search ranking, summaries, weekly news digest (LLM Chain)</td>
+        <td><span class="badge">SF3</span><span class="badge">SF4</span></td>
         <td>OpenAI-compatible API at api.groq.com</td>
+      </tr>
+      <tr>
+        <td><strong>🔍 SerpAPI</strong></td>
+        <td>Google web search — weekly literary news feed</td>
+        <td><span class="badge">SF4</span></td>
+        <td>SerpAPI key — free 100 searches/month</td>
       </tr>
       <tr>
         <td><strong>📧 Gmail + Google OAuth</strong></td>
@@ -526,7 +542,13 @@
       </tr>
       <tr>
         <td><strong>📅 Google Calendar</strong></td>
-        <td>Return-date reminders as tentative events</td>
+        <td>Return-date reminders + weekly event from news digest</td>
+        <td><span class="badge">SF2</span><span class="badge">SF4</span></td>
+        <td>Google OAuth (same credential)</td>
+      </tr>
+      <tr>
+        <td><strong>✅ Google Tasks</strong></td>
+        <td>Task reminder created for borrower on book issue</td>
         <td><span class="badge">SF2</span></td>
         <td>Google OAuth (same credential)</td>
       </tr>
@@ -584,16 +606,19 @@
       <span class="app-chip">3. Google Sheets</span>
       <span class="app-chip">4. Google Books</span>
       <span class="app-chip">5. Open Library</span>
-      <span class="app-chip">6. Groq AI (Llama 3.3)</span>
-      <span class="app-chip">7. Gmail</span>
-      <span class="app-chip">8. Google Drive</span>
-      <span class="app-chip">9. Google Calendar</span>
-      <span class="app-chip">10. WhatsApp Cloud API</span>
-      <span class="app-chip">11. Discord Webhooks</span>
-      <span class="app-chip">12. GitHub REST API</span>
-      <span class="app-chip">13. OpenWeatherMap</span>
-      <span class="app-chip">14. YouTube Data API v3</span>
-      <span class="app-chip">15. Railway Cloud (hosting)</span>
+      <span class="app-chip">6. Google Gemini AI</span>
+      <span class="app-chip">7. Groq AI (Llama 3.3)</span>
+      <span class="app-chip">8. Gmail</span>
+      <span class="app-chip">9. Google Drive</span>
+      <span class="app-chip">10. Google Calendar</span>
+      <span class="app-chip">11. Google Tasks</span>
+      <span class="app-chip">12. WhatsApp Cloud API</span>
+      <span class="app-chip">13. Discord Webhooks</span>
+      <span class="app-chip">14. GitHub REST API</span>
+      <span class="app-chip">15. OpenWeatherMap</span>
+      <span class="app-chip">16. YouTube Data API v3</span>
+      <span class="app-chip">17. SerpAPI (Google Search)</span>
+      <span class="app-chip">18. Railway Cloud (hosting)</span>
     </div>
   </div>
 
