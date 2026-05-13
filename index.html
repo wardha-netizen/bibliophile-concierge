@@ -470,7 +470,7 @@
   </a>
   <div class="hero-meta">
     <span>📍 Karachi, Pakistan</span>
-    <span>🤖 Powered by Groq AI (Llama 3.3)</span>
+    <span>🤖 Powered by Gemini AI + Groq AI</span>
     <span>⚡ 1 Combined n8n Workflow</span>
     <span>🌐 Multilingual Support</span>
   </div>
@@ -479,10 +479,10 @@
 <!-- ══════════ STATS BAR ══════════ -->
 <div class="stats-bar">
   <div class="stat"><span class="num">1</span><span class="lbl">Combined Workflow</span></div>
-  <div class="stat"><span class="num">3</span><span class="lbl">Team Members</span></div>
-  <div class="stat"><span class="num">12+</span><span class="lbl">Integrations</span></div>
-  <div class="stat"><span class="num">4</span><span class="lbl">Sub-Flows Inside</span></div>
-  <div class="stat"><span class="num">∞</span><span class="lbl">Books to Read</span></div>
+  <div class="stat"><span class="num">74</span><span class="lbl">Total Nodes</span></div>
+  <div class="stat"><span class="num">9</span><span class="lbl">Triggers (4 Forms + 5 Crons)</span></div>
+  <div class="stat"><span class="num">17+</span><span class="lbl">Integrations</span></div>
+  <div class="stat"><span class="num">4</span><span class="lbl">Sub-Flows</span></div>
 </div>
 
 <!-- ══════════ THE 4 WORKFLOWS ══════════ -->
@@ -499,7 +499,7 @@
       <p>Add any book in English, Urdu, or Arabic. AI auto-detects language, assigns genre, picks a plant spirit, and fetches the cover — all for free.</p>
       <ul class="features">
         <li>Google Books + Open Library cover fetch</li>
-        <li>Groq AI genre &amp; plant spirit classification</li>
+        <li>Google Gemini AI genre &amp; plant spirit classification</li>
         <li>Auto language detection (no paid API)</li>
         <li>Saves to Airtable + Google Sheets</li>
         <li>Discord beautiful embed notification</li>
@@ -544,10 +544,10 @@
       <p>Request books, get daily team digests, and receive instant return alerts — all 3 team members notified via WhatsApp Cloud API.</p>
       <ul class="features">
         <li>Book request form → WhatsApp all 3 members</li>
-        <li>Daily 9AM digest: stats + who has what</li>
-        <li>Return alerts: "book available now!"</li>
-        <li>All requests logged to Google Sheets</li>
-        <li>Works in WhatsApp testing mode</li>
+        <li>Google Sheets request log + Gmail confirmation</li>
+        <li>Weekly literary news digest via SerpAPI + Groq AI</li>
+        <li>AI-written HTML email with curated book news</li>
+        <li>Google Calendar: tentative event on request</li>
       </ul>
       <a href="#setup" class="card-btn">📋 See Setup Guide</a>
     </div>
@@ -563,7 +563,7 @@
   <div class="arch-flow">
     <div class="arch-box"><span class="icon">📋</span><span class="label">n8n Form</span></div>
     <div class="arch-arrow">→</div>
-    <div class="arch-box"><span class="icon">🤖</span><span class="label">Groq AI</span></div>
+    <div class="arch-box"><span class="icon">🤖</span><span class="label">Gemini / Groq AI</span></div>
     <div class="arch-arrow">→</div>
     <div class="arch-box"><span class="icon">🗃️</span><span class="label">Airtable</span></div>
     <div class="arch-arrow">→</div>
@@ -591,6 +591,7 @@
   <div class="divider"></div>
   <div class="tech-grid">
     <div class="tech-pill">🔧 n8n (Railway Cloud)</div>
+    <div class="tech-pill">🔮 Google Gemini AI</div>
     <div class="tech-pill">🤖 Groq AI — Llama 3.3 70B</div>
     <div class="tech-pill">🗃️ Airtable</div>
     <div class="tech-pill">📊 Google Sheets</div>
@@ -605,6 +606,7 @@
     <div class="tech-pill">🐙 GitHub REST API</div>
     <div class="tech-pill">📚 Google Books API</div>
     <div class="tech-pill">🏛️ Open Library API</div>
+    <div class="tech-pill">🔍 SerpAPI (Google Search)</div>
   </div>
 </section>
 
