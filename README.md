@@ -1,141 +1,136 @@
-# 🌿 Bibliophile Concierge — n8n Setup Guide
+# 🌿 Bibliophile Concierge
 
-A 3-workflow, 24-app library management system styled like an enchanted "Tangled" garden.
+An enchanted, AI-powered library management system built with **n8n** — one unified workflow with four intelligent sub-flows tending your entire reading garden.
 
-## What you're getting
-
-| File | Member | Purpose |
-|------|--------|---------|
-| `01-acquisition-multilingual-librarian.json` | Member 1 | Book intake form → language detect → AI genre + plant spirit → Unsplash cover → Cloudinary host → Airtable + Sheets + WhatsApp confirm |
-| `02-inventory-loan-manager.json` | Member 2 | Issue/return form, Calendar + Todoist reminders, daily weather→genre suggestion, overdue Telegram + Discord nudges |
-| `03-engagement-semantic-search.json` | Member 3 | Daily AI quote (Gmail+Telegram), Telegram semantic search across Airtable + Drive PDFs, completed-book archiving to Instagram, LinkedIn, GitHub, Pinterest, YouTube, Spotify, Dropbox, Excel |
-
-All 24 apps from your spec are wired up.
+> **Live on Railway:** [View Workflow](https://n8n-production-a7830.up.railway.app/workflow/M25bDNquM81jUjQh)
+> **Landing Page:** [bibliophile-concierge](https://github.com/wardha-netizen/bibliophile-concierge)
 
 ---
 
-## 1. Install n8n (free, self-hosted)
+## 📁 Repository Structure
 
-```bash
-npx n8n
 ```
-Open http://localhost:5678 and create your owner account. Self-hosted n8n is free and unlimited.
-
-> Cloud option: n8n.cloud has a 14-day trial. Self-host is recommended for free use.
-
----
-
-## 2. Import the 3 workflows
-
-In n8n:
-1. Click **Workflows → Import from File**
-2. Pick each `.json` file from this folder one at a time
-3. Each will appear as inactive — leave them off until credentials are set
+bibliophile-concierge/
+├── bibliophile-concierge-complete.json   ← THE combined n8n workflow (import this)
+├── index.html                            ← Landing page
+├── workflows.html                        ← All 4 form URLs + webhook IDs
+├── architecture.html                     ← System architecture diagram
+├── summaries/                            ← AI-generated book archive markdowns
+│   ├── Archive_2026-05-08.md
+│   └── Archive_2026-05-10.md
+└── README.md
+```
 
 ---
 
-## 3. Set up free accounts & credentials
+## ⚡ One File. Four Sub-Flows.
 
-### 🔑 Variables (Settings → Variables)
+The entire system lives in **one importable JSON** — all four sub-flows, all Airtable mappings, all AI nodes.
 
-Add these as n8n variables (`$vars.NAME`). All are free:
+### Import URL (paste directly in n8n → Import from URL)
 
-| Variable | Where to get it (free) |
+```
+https://raw.githubusercontent.com/wardha-netizen/bibliophile-concierge/main/bibliophile-concierge-complete.json
+```
+
+| Sub-Flow | Purpose | Entry Point | Webhook ID |
+|---|---|---|---|
+| 📖 Acquisition | Add books (multilingual) | Form trigger | `6b4f9f6a-…-332547cc6f00` |
+| 📊 Inventory | Issue / return + daily weather suggestion | Form + Cron | `ff3c257e-…-1a72ed65c511` |
+| 🔍 Engagement | Semantic search + auto-archive | Form + Cron | `fd79b2ae-…-beaa417e16ca` |
+| 📱 Team Hub | WhatsApp book requests + daily digest | Form + Cron | `d18624cb-…-bffc5ddf3fe5` |
+
+---
+
+## 🚀 Setup — 7 Steps
+
+### 1. Import the Workflow
+In your n8n instance → Workflows → ⋯ → **Import from URL**, paste the raw URL above.
+Or download `bibliophile-concierge-complete.json` and use **Import from File**.
+
+### 2. Google OAuth
+Credentials → New → **Google OAuth2**
+One credential covers Gmail, Sheets, Drive, Calendar, and Tasks. Grant all scopes.
+
+### 3. Airtable PAT
+Visit [airtable.com/create/tokens](https://airtable.com/create/tokens) → create a token with `data.records:read` and `data.records:write` on the **Bibliophile** base.
+
+```
+Base ID:  apptGlLDt9VHCE9ey
+Table ID: tblENLBbFVBYaEahV  (Books)
+```
+
+### 4. Groq AI (OpenAI-compatible, free)
+Credentials → New → **OpenAI**
+
+```
+Base URL:  https://api.groq.com/openai/v1
+API Key:   your key from console.groq.com
+Model:     llama-3.3-70b-versatile
+```
+
+### 5. GitHub PAT
+GitHub → Settings → Developer Settings → Fine-grained PATs → create a token with **Contents: Read & Write** on this repo.
+
+### 6. Airtable — Books Table Schema
+Create a base called **Bibliophile** with a **Books** table containing these fields:
+
+| Field | Type | Field | Type |
+|---|---|---|---|
+| Book Title | Text | Lending Status | Select |
+| Author | Text | Added By | Select |
+| Language | Text | Format | Select |
+| Genre | Select | Price | Number |
+| Summary | Long Text | Rating | Number |
+| ISBN | Text | Tags | Text |
+| Publisher | Text | Availability Worldwide | Select |
+| Publication Date | Date | Book Condition | Select |
+| Edition | Text | Is Archived | Checkbox |
+| Number of Pages | Number | Motivational Quotes | Long Text |
+| Cover Image | Attachment | Related Events | Text |
+| Attachment Summary | Long Text | | |
+
+### 7. Activate & Use
+Toggle the workflow **Active** in n8n. Share the form URLs with your team:
+
+| Form | URL |
 |---|---|
-| `GOOGLE_TRANSLATE_API_KEY` | Google Cloud free tier — enable Translate API |
-| `UNSPLASH_ACCESS_KEY` | https://unsplash.com/developers (free, 50 req/hr) |
-| `CLOUDINARY_CLOUD_NAME` | https://cloudinary.com signup → Dashboard |
-| `CLOUDINARY_UPLOAD_PRESET` | Cloudinary → Settings → Upload → add unsigned preset |
-| `AIRTABLE_BASE_ID` | https://airtable.com → create base → copy from URL `appXXXX` |
-| `GOOGLE_SHEETS_BACKUP_ID` | Sheet URL `/d/<ID>/edit` |
-| `OPENWEATHER_API_KEY` | https://openweathermap.org/api (free 1k calls/day) |
-| `OWNER_CITY` | e.g. `Lahore` |
-| `OWNER_WHATSAPP_NUMBER` | your number with country code, no `+` |
-| `OWNER_TELEGRAM_CHAT_ID` | message @userinfobot on Telegram |
-| `WHATSAPP_PHONE_NUMBER_ID` | Meta for Developers → WhatsApp Cloud API (free tier) |
-| `OWNER_EMAIL` / `GMAIL_FROM` | your Gmail |
-| `DISCORD_WEBHOOK_URL` | Discord channel → Edit → Integrations → Webhooks |
-| `GITHUB_OWNER` / `GITHUB_REPO` | your username + a public repo |
-| `PINTEREST_BOARD_ID` / `PINTEREST_TOKEN` | https://developers.pinterest.com (free) |
-| `YOUTUBE_API_KEY` | Google Cloud → YouTube Data API v3 (free) |
-| `SPOTIFY_VIBE_PLAYLIST_ID` / `SPOTIFY_DEFAULT_TRACK_ID` | Spotify → playlist/track URI |
-| `MS_EXCEL_FILE_ID` | OneDrive → file ID via Graph Explorer |
-
-### 🔐 Credentials (Credentials → New)
-
-For these, n8n has built-in OAuth — just click **Connect**:
-- **Airtable** (Personal Access Token from airtable.com/create/tokens)
-- **Google Sheets / Drive / Calendar / Gmail** (one Google OAuth covers all)
-- **Telegram** (BotFather → `/newbot` → token)
-- **WhatsApp Business Cloud** (Meta for Developers, free 1k convos/mo)
-- **Todoist** (Settings → Integrations → API token)
-- **GitHub** (Settings → Developer settings → fine-grained PAT)
-- **LinkedIn** (OAuth via n8n)
-- **Spotify** (OAuth via n8n)
-- **Dropbox** (OAuth via n8n)
-- **Microsoft Excel** (OAuth via n8n)
-- **OpenAI node — point it at Groq for FREE**:
-  - Base URL: `https://api.groq.com/openai/v1`
-  - API key: from https://console.groq.com (free, very fast)
-  - Model already set: `llama-3.3-70b-versatile`
+| 📖 Book Intake | `https://n8n-production-a7830.up.railway.app/form/6b4f9f6a-6d9f-4c2d-8764-332547cc6f00` |
+| 📊 Loan Manager | `https://n8n-production-a7830.up.railway.app/form/ff3c257e-b451-4071-9cc9-1a72ed65c511` |
+| 🔍 Book Search | `https://n8n-production-a7830.up.railway.app/form/fd79b2ae-06be-4762-9e7a-beaa417e16ca` |
+| 📱 Book Request | `https://n8n-production-a7830.up.railway.app/form/d18624cb-ad72-47e9-aa13-bffc5ddf3fe5` |
 
 ---
 
-## 4. Set up your Airtable base
+## 🔧 Tech Stack
 
-Create a base called **Bibliophile** with a table **Books** and these fields:
-
-| Field | Type |
+| Service | Role |
 |---|---|
-| Title | Single line text |
-| Author | Single line text |
-| Language | Single line text |
-| Genre | Single select (Novels, Poetry, Education, Religion, Biography, Science, Children, Other) |
-| Plant Spirit | Single line text |
-| Summary | Long text |
-| Notes | Long text |
-| Price (USD) | Number |
-| Status | Single select (Available, Issued, Completed) |
-| Lent To | Single line text |
-| Due Date | Date |
-| Cover URL | URL |
-| Owner | Single select (Main Garden, Member 1, Member 2, Member 3) |
-| Posted | Checkbox |
-
-Mirror the same columns in Google Sheets tab `Books`, plus tabs `Loans` and `Completed`.
+| **n8n** (Railway Cloud) | Workflow automation engine |
+| **Groq AI** — Llama 3.3 70B | Genre classification, AI summaries, search ranking |
+| **Airtable** | Primary book database (`apptGlLDt9VHCE9ey`) |
+| **Google Sheets** | Backup + archive logs (`Bibliophile Vault`) |
+| **Gmail** | Overdue alerts, search results, daily quotes |
+| **Google Calendar** | Return-date reminders |
+| **Google Drive** | PDF document search |
+| **Google Books API** | Book metadata + cover images |
+| **Open Library API** | Cover image fallback (no key needed) |
+| **WhatsApp Cloud API** | Book request alerts + daily team digest |
+| **Discord Webhooks** | New book announcements + daily suggestions |
+| **OpenWeatherMap** | Karachi weather → genre mapping |
+| **YouTube Data API v3** | Book highlight videos for archives |
+| **GitHub REST API** | Push archive markdown files |
 
 ---
 
-## 5. Activate the workflows
+## 👩‍💻 Team
 
-Once credentials are saved:
-1. Open each workflow → toggle **Active** in the top right
-2. Webhook URLs appear on the form-trigger nodes — share them as your "intake" and "loan" forms
-3. Send a Telegram message to your bot to test semantic search
-
----
-
-## 6. The "Tangled" / Cartoon Garden look
-
-The form triggers in workflows 1 & 2 already include cartoon-garden CSS:
-- Warm cream + sage palette (`#fef6e4`, `#7a9e7e`, `#6b4226`)
-- Georgia serif for that storybook feel
-- Rounded pill buttons and soft shadows
-
-To customize further, edit the `customCss` field on the form-trigger nodes.
+| Member | Role | Sub-Flow |
+|---|---|---|
+| **Wardha Khalid** | Lead Developer & System Architect | 📖 Acquisition + 📱 WhatsApp Hub |
+| **Teammate 1** | Inventory & Loan Specialist | 📊 Loan Manager |
+| **Teammate 2** | Engagement & Search Specialist | 🔍 Semantic Search |
 
 ---
 
-## 7. Technical highlights for your documentation
-
-- **Semantic Search**: Workflow 3 searches Airtable `Notes`/`Summary`/`Title` AND Google Drive PDFs in parallel, then an LLM merges + ranks results.
-- **Data Integrity**: Every Airtable write is mirrored to Google Sheets (primary vs. backup) and a Microsoft Excel log on completion.
-- **Multi-channel notifications**: WhatsApp, Telegram, Discord, Gmail, and platform-native posts (Instagram, LinkedIn, Pinterest, GitHub).
-- **Webhooks + AI + DB**: All three boxes from your teacher's checklist are demonstrated in every workflow.
-- **Weather-Genre Sync**: A daily cron checks OpenWeatherMap, maps weather → genre, picks an Available book from that shelf, sends to Telegram.
-
----
-
-## 24-app checklist
-
-✅ n8n Forms ✅ Airtable ✅ Google Sheets ✅ Google Books ✅ Open Library ✅ OpenAI/Groq ✅ Google Translate ✅ WhatsApp ✅ Telegram ✅ Gmail ✅ Google Drive ✅ Dropbox ✅ Cloudinary ✅ Unsplash ✅ Todoist ✅ Google Calendar ✅ Spotify ✅ YouTube ✅ Instagram ✅ LinkedIn ✅ Pinterest ✅ Discord ✅ GitHub ✅ OpenWeatherMap ✅ Microsoft Excel
+*Built with love in Karachi 🇵🇰 · University Project · Automation & AI · 2025*
