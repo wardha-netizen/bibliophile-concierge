@@ -1,0 +1,5339 @@
+{
+  "name": "🌿 Bibliophile Concierge",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "6b4f9f6a-6d9f-4c2d-8764-332547cc6f00",
+        "formTitle": "🌿 Plant a New Book in Your Library Garden",
+        "formDescription": "Add a book to your enchanted library. Title can be in English, Urdu, or Arabic.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Book Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Author (optional)"
+            },
+            {
+              "fieldLabel": "Notes / Quote you loved",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Owner / Shelf",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Main Garden"
+                  },
+                  {
+                    "option": "Member 1"
+                  },
+                  {
+                    "option": "Member 2"
+                  },
+                  {
+                    "option": "Member 3"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:'Georgia',serif;min-height:100vh;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:20px;box-shadow:0 8px 32px rgba(120,80,40,0.18);padding:32px;}h1{color:#6b4226;font-size:1.6em;letter-spacing:1px;}label{color:#7a5c3a;font-weight:bold;}input,textarea,select{border:1.5px solid #d4a373 !important;border-radius:10px !important;background:#fffdf7 !important;}button{background:linear-gradient(135deg,#7a9e7e,#4a7c59) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;box-shadow:0 4px 12px rgba(74,124,89,0.3) !important;}"
+        }
+      },
+      "id": "5f3d838b-bf90-496c-82c2-81272ef2ba64",
+      "name": "📖 Book Intake Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [
+        -4976,
+        -1984
+      ],
+      "webhookId": "6b4f9f6a-6d9f-4c2d-8764-332547cc6f00"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/books/v1/volumes",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json['Book Title'] }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "44cc46ab-41dd-4b3b-9da3-07e006e51ddc",
+      "name": "📚 Google Books Lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4752,
+        -2080
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://openlibrary.org/search.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $('📖 Book Intake Form').item.json['Book Title'] }}"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2050514e-9f80-4eee-8166-e2a455eafacb",
+      "name": "🏛️ Open Library Lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4752,
+        -1888
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "0cd4518d-d43c-42f5-af05-93ae760949a3",
+      "name": "🔗 Merge Book Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -4528,
+        -1984
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const gb = $input.first().json;\nconst ol = $input.last().json;\nlet cover = gb?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || '';\nif (cover) cover = cover.replace('http://', 'https://');\nif (!cover) {\n  const isbn = ol?.docs?.[0]?.isbn?.[0];\n  if (isbn) cover = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;\n}\nif (!cover) cover = 'https://covers.openlibrary.org/b/id/8739161-L.jpg';\nreturn [{ json: { coverUrl: cover } }];"
+      },
+      "id": "1d0ff635-a6a7-43ae-85c6-38203dc1a625",
+      "name": "🖼️ Extract Cover (Free)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4304,
+        -2080
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const title = $('📖 Book Intake Form').item.json['Book Title'] || '';\nlet lang = 'English';\nif (/[\\u0600-\\u06FF]/.test(title)) lang = 'Arabic/Urdu';\nelse if (/[\\u4e00-\\u9fff]/.test(title)) lang = 'Chinese';\nelse if (/[\\u0900-\\u097F]/.test(title)) lang = 'Hindi';\nreturn [{ json: { detectedLanguage: lang } }];"
+      },
+      "id": "3f5909a0-62d8-4780-9656-1d45db175c1d",
+      "name": "🌐 Detect Language (Free)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4304,
+        -1888
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Book Title": "={{ $('📖 Book Intake Form').item.json[\"Book Title\"] }}",
+            "Author": "={{ $json.author }}",
+            "Lending Status": "Available",
+            "Added By": "={{ $('📖 Book Intake Form').item.json[\"Owner / Shelf\"] }}",
+            "Language": "={{ $json.language }}",
+            "Genre": "={{ $json.genre }}",
+            "Publication Date": "={{ $json.publication_date }}",
+            "Publisher": "={{ $json.publisher }}",
+            "ISBN": "={{ $json.isbn }}",
+            "Edition": "={{ $json.edition }}",
+            "Number of Pages": "={{ $json.pages }}",
+            "Cover Image": "={{ $json.cover_image_url }}",
+            "Related Events": "={{ $json.related_events }}",
+            "Price": "={{ $json.price }}",
+            "Motivational Quotes": "={{ $json.motivational_quote }}",
+            "Book Condition": "={{ $json.book_condition }}",
+            "Tags": "={{ $json.tags }}",
+            "Format": "={{ $json.format }}",
+            "Availability Worldwide": "={{ $json.availability }}",
+            "Rating": "={{ Math.round($json.rating) }}",
+            "Summary": "={{ $json.summary }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Book Title",
+              "displayName": "Book Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Genre",
+              "displayName": "Genre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Language",
+              "displayName": "Language",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Cover Image",
+              "displayName": "Cover Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ISBN",
+              "displayName": "ISBN",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publication Date",
+              "displayName": "Publication Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publisher",
+              "displayName": "Publisher",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Edition",
+              "displayName": "Edition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Pages",
+              "displayName": "Number of Pages",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Format",
+              "displayName": "Format",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Hardcover",
+                  "value": "Hardcover"
+                },
+                {
+                  "name": "Paperback",
+                  "value": "Paperback"
+                },
+                {
+                  "name": "eBook",
+                  "value": "eBook"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Availability Worldwide",
+              "displayName": "Availability Worldwide",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Available ",
+                  "value": "Available "
+                },
+                {
+                  "name": "Unavailable",
+                  "value": "Unavailable"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lending Status",
+              "displayName": "Lending Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "At home",
+                  "value": "At home"
+                },
+                {
+                  "name": "Lent out",
+                  "value": "Lent out"
+                },
+                {
+                  "name": "Available",
+                  "value": "Available"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lent to",
+              "displayName": "Lent to",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lend Date",
+              "displayName": "Lend Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Book Condition",
+              "displayName": "Book Condition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Excellent",
+                  "value": "Excellent"
+                },
+                {
+                  "name": "Average",
+                  "value": "Average"
+                },
+                {
+                  "name": "Poor",
+                  "value": "Poor"
+                },
+                {
+                  "name": "Good",
+                  "value": "Good"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Motivational Quotes",
+              "displayName": "Motivational Quotes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Related Events",
+              "displayName": "Related Events",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "Fiction",
+                  "value": "Fiction"
+                },
+                {
+                  "name": "Non-Fiction",
+                  "value": "Non-Fiction"
+                },
+                {
+                  "name": "Classic",
+                  "value": "Classic"
+                },
+                {
+                  "name": "Best Seller",
+                  "value": "Best Seller"
+                },
+                {
+                  "name": "To Read",
+                  "value": "To Read"
+                },
+                {
+                  "name": "Favorite",
+                  "value": "Favorite"
+                },
+                {
+                  "name": "Memoir",
+                  "value": "Memoir"
+                },
+                {
+                  "name": "Psychological",
+                  "value": "Psychological"
+                },
+                {
+                  "name": "Inspirational",
+                  "value": "Inspirational"
+                },
+                {
+                  "name": "Self Help",
+                  "value": "Self Help"
+                },
+                {
+                  "name": "Adventure",
+                  "value": "Adventure"
+                },
+                {
+                  "name": "Mystery",
+                  "value": "Mystery"
+                },
+                {
+                  "name": "History",
+                  "value": "History"
+                },
+                {
+                  "name": "adventure",
+                  "value": "adventure"
+                },
+                {
+                  "name": " classic",
+                  "value": " classic"
+                },
+                {
+                  "name": " pirates",
+                  "value": " pirates"
+                },
+                {
+                  "name": "war",
+                  "value": "war"
+                },
+                {
+                  "name": " friendship",
+                  "value": " friendship"
+                },
+                {
+                  "name": " betrayal",
+                  "value": " betrayal"
+                },
+                {
+                  "name": "tragedy",
+                  "value": "tragedy"
+                },
+                {
+                  "name": " redemption",
+                  "value": " redemption"
+                },
+                {
+                  "name": "thriller",
+                  "value": "thriller"
+                },
+                {
+                  "name": " horror",
+                  "value": " horror"
+                },
+                {
+                  "name": " suspense",
+                  "value": " suspense"
+                },
+                {
+                  "name": " apocalyptic",
+                  "value": " apocalyptic"
+                },
+                {
+                  "name": "mystery",
+                  "value": "mystery"
+                },
+                {
+                  "name": " social",
+                  "value": " social"
+                },
+                {
+                  "name": "Pakistani fiction",
+                  "value": "Pakistani fiction"
+                },
+                {
+                  "name": " social issues",
+                  "value": " social issues"
+                },
+                {
+                  "name": " relationships",
+                  "value": " relationships"
+                },
+                {
+                  "name": "fiction",
+                  "value": "fiction"
+                },
+                {
+                  "name": " romance",
+                  "value": " romance"
+                },
+                {
+                  "name": " drama",
+                  "value": " drama"
+                },
+                {
+                  "name": "social issues",
+                  "value": "social issues"
+                },
+                {
+                  "name": " family drama",
+                  "value": " family drama"
+                },
+                {
+                  "name": "classic",
+                  "value": "classic"
+                },
+                {
+                  "name": " children",
+                  "value": " children"
+                },
+                {
+                  "name": " orphan",
+                  "value": " orphan"
+                },
+                {
+                  "name": " swiss",
+                  "value": " swiss"
+                },
+                {
+                  "name": "children",
+                  "value": "children"
+                },
+                {
+                  "name": " fairy tale",
+                  "value": " fairy tale"
+                },
+                {
+                  "name": " science fiction",
+                  "value": " science fiction"
+                },
+                {
+                  "name": " adventure",
+                  "value": " adventure"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Added By",
+              "displayName": "Added By",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Main Garden",
+                  "value": "Main Garden"
+                },
+                {
+                  "name": "Member 1",
+                  "value": "Member 1"
+                },
+                {
+                  "name": "Member 2",
+                  "value": "Member 2"
+                },
+                {
+                  "name": "Member 3",
+                  "value": "Member 3"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "05836c4b-1353-4fec-a862-8c41194514f8",
+      "name": "🌱 Plant in Airtable Vault",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3280,
+        -1984
+      ],
+      "executeOnce": false,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ",
+          "mode": "list",
+          "cachedResultName": "Bibliophile Vault",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Book Intake Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('📖 Book Intake Form').item.json[\"Book Title\"] }}",
+            "Author": "={{ $json.fields.Author }}",
+            "Genre": "={{ $json.fields.Genre }}",
+            "Language": "={{ $json.fields.Language }}",
+            "ISBN": "={{ $json.fields.ISBN }}",
+            "Publication Date": "={{ $json.fields[\"Publication Date\"] }}",
+            "Publisher": "={{ $json.fields.Publisher }}",
+            "Edition": "={{ $json.fields.Edition }}",
+            "Pages": "={{ $json.fields[\"Number of Pages\"] }}",
+            "Format": "={{ $json.fields.Format }}"
+          },
+          "matchingColumns": [
+            "Title"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Genre",
+              "displayName": "Genre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Language",
+              "displayName": "Language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ISBN",
+              "displayName": "ISBN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Publication Date",
+              "displayName": "Publication Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Publisher",
+              "displayName": "Publisher",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Edition",
+              "displayName": "Edition",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pages",
+              "displayName": "Pages",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Format",
+              "displayName": "Format",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "64f51654-308f-471c-a029-28923552893d",
+      "name": "📒 Backup to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -3008,
+        -2080
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3jU497jxX3N4Nz8Z",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=📚 A new book has been planted in the Bibliophile Vault!\n\"{{ $json.fields[\"Book Title\"] }}!\""
+            },
+            {
+              "name": "Today's Motivation",
+              "value": "={{ $json.fields[\"Motivational Quotes\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "94077737-be3e-426d-b7bc-04eee3ea9af1",
+      "name": "💬 Discord Planting Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3008,
+        -1888
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "path": "ff3c257e-b451-4071-9cc9-1a72ed65c511",
+        "formTitle": "📤 Issue or Return a Book",
+        "formDescription": "Lend a book to a friend or mark it as returned.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Book Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Action",
+              "fieldType": "dropdown",
+              "defaultValue": "Issue",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Issue"
+                  },
+                  {
+                    "option": "Return"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Friend's Name"
+            },
+            {
+              "fieldLabel": "Friend's Contact (Email/Phone)"
+            },
+            {
+              "fieldLabel": "Return Due Date",
+              "fieldType": "date"
+            }
+          ]
+        },
+        "options": {
+          "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:'Georgia',serif;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:20px;box-shadow:0 8px 32px rgba(120,80,40,0.18);padding:32px;}h1{color:#6b4226;}label{color:#7a5c3a;font-weight:bold;}input,select{border:1.5px solid #d4a373 !important;border-radius:10px !important;background:#fffdf7 !important;}button{background:linear-gradient(135deg,#7a9e7e,#4a7c59) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;}"
+        }
+      },
+      "id": "1839af70-2a95-4b0d-912c-13448c34998e",
+      "name": "📋 Loan Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [
+        -2304,
+        -1600
+      ],
+      "webhookId": "ff3c257e-b451-4071-9cc9-1a72ed65c511"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "filterByFormula": "={Book Title} = '{{ $('📋 Loan Form').item.json[\"Book Title\"] }}'",
+        "options": {}
+      },
+      "id": "d55bb1c8-ee4a-492b-a8ef-4a3a846667c1",
+      "name": "🔎 Find Book in Vault",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2080,
+        -1600
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('📋 Loan Form').item.json.Action }}",
+                    "rightValue": "Issue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b58f012b-b68b-4274-8847-241c68fc2f3d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Issue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('📋 Loan Form').item.json.Action }}",
+                    "rightValue": "Return",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0e53d7c4-ba75-4a9d-9e88-0da230eb660b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Return"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6ee3b0a0-c63e-46e5-a972-d2b02dead1cd",
+      "name": "🔀 Issue or Return?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1856,
+        -1600
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Book Title": "={{ $('📋 Loan Form').item.json[\"Book Title\"] }}",
+            "Lent to": "={{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
+            "Lend Date": "={{ $('📋 Loan Form').item.json.submittedAt }}",
+            "Lending Status": "Lent out",
+            "Return Date": "={{ $('📋 Loan Form').item.json[\"Return Due Date\"] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Book Title",
+              "displayName": "Book Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Genre",
+              "displayName": "Genre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Language",
+              "displayName": "Language",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Cover Image",
+              "displayName": "Cover Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ISBN",
+              "displayName": "ISBN",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publication Date",
+              "displayName": "Publication Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publisher",
+              "displayName": "Publisher",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Edition",
+              "displayName": "Edition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Number of Pages",
+              "displayName": "Number of Pages",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Format",
+              "displayName": "Format",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Hardcover",
+                  "value": "Hardcover"
+                },
+                {
+                  "name": "Paperback",
+                  "value": "Paperback"
+                },
+                {
+                  "name": "eBook",
+                  "value": "eBook"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Availability Worldwide",
+              "displayName": "Availability Worldwide",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Available ",
+                  "value": "Available "
+                },
+                {
+                  "name": "Unavailable",
+                  "value": "Unavailable"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lending Status",
+              "displayName": "Lending Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lent out",
+                  "value": "Lent out"
+                },
+                {
+                  "name": "Available",
+                  "value": "Available"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lent to",
+              "displayName": "Lent to",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lend Date",
+              "displayName": "Lend Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Book Condition",
+              "displayName": "Book Condition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Excellent",
+                  "value": "Excellent"
+                },
+                {
+                  "name": "Average",
+                  "value": "Average"
+                },
+                {
+                  "name": "Poor",
+                  "value": "Poor"
+                },
+                {
+                  "name": "Good",
+                  "value": "Good"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Motivational Quotes",
+              "displayName": "Motivational Quotes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Related Events",
+              "displayName": "Related Events",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "Fiction",
+                  "value": "Fiction"
+                },
+                {
+                  "name": "Non-Fiction",
+                  "value": "Non-Fiction"
+                },
+                {
+                  "name": "Classic",
+                  "value": "Classic"
+                },
+                {
+                  "name": "Best Seller",
+                  "value": "Best Seller"
+                },
+                {
+                  "name": "To Read",
+                  "value": "To Read"
+                },
+                {
+                  "name": "Favorite",
+                  "value": "Favorite"
+                },
+                {
+                  "name": "Memoir",
+                  "value": "Memoir"
+                },
+                {
+                  "name": "Psychological",
+                  "value": "Psychological"
+                },
+                {
+                  "name": "Inspirational",
+                  "value": "Inspirational"
+                },
+                {
+                  "name": "Self Help",
+                  "value": "Self Help"
+                },
+                {
+                  "name": "Adventure",
+                  "value": "Adventure"
+                },
+                {
+                  "name": "Mystery",
+                  "value": "Mystery"
+                },
+                {
+                  "name": "History",
+                  "value": "History"
+                },
+                {
+                  "name": "adventure",
+                  "value": "adventure"
+                },
+                {
+                  "name": " classic",
+                  "value": " classic"
+                },
+                {
+                  "name": " pirates",
+                  "value": " pirates"
+                },
+                {
+                  "name": "war",
+                  "value": "war"
+                },
+                {
+                  "name": " friendship",
+                  "value": " friendship"
+                },
+                {
+                  "name": " betrayal",
+                  "value": " betrayal"
+                },
+                {
+                  "name": "tragedy",
+                  "value": "tragedy"
+                },
+                {
+                  "name": " redemption",
+                  "value": " redemption"
+                },
+                {
+                  "name": "thriller",
+                  "value": "thriller"
+                },
+                {
+                  "name": " horror",
+                  "value": " horror"
+                },
+                {
+                  "name": " suspense",
+                  "value": " suspense"
+                },
+                {
+                  "name": " apocalyptic",
+                  "value": " apocalyptic"
+                },
+                {
+                  "name": "mystery",
+                  "value": "mystery"
+                },
+                {
+                  "name": " social",
+                  "value": " social"
+                },
+                {
+                  "name": "Pakistani fiction",
+                  "value": "Pakistani fiction"
+                },
+                {
+                  "name": " social issues",
+                  "value": " social issues"
+                },
+                {
+                  "name": " relationships",
+                  "value": " relationships"
+                },
+                {
+                  "name": "fiction",
+                  "value": "fiction"
+                },
+                {
+                  "name": " romance",
+                  "value": " romance"
+                },
+                {
+                  "name": " drama",
+                  "value": " drama"
+                },
+                {
+                  "name": "social issues",
+                  "value": "social issues"
+                },
+                {
+                  "name": " family drama",
+                  "value": " family drama"
+                },
+                {
+                  "name": "classic",
+                  "value": "classic"
+                },
+                {
+                  "name": " children",
+                  "value": " children"
+                },
+                {
+                  "name": " orphan",
+                  "value": " orphan"
+                },
+                {
+                  "name": " swiss",
+                  "value": " swiss"
+                },
+                {
+                  "name": "children",
+                  "value": "children"
+                },
+                {
+                  "name": " fairy tale",
+                  "value": " fairy tale"
+                },
+                {
+                  "name": " science fiction",
+                  "value": " science fiction"
+                },
+                {
+                  "name": " adventure",
+                  "value": " adventure"
+                },
+                {
+                  "name": "feminism",
+                  "value": "feminism"
+                },
+                {
+                  "name": "socialism",
+                  "value": "socialism"
+                },
+                {
+                  "name": "autobiography",
+                  "value": "autobiography"
+                },
+                {
+                  "name": "humor",
+                  "value": "humor"
+                },
+                {
+                  "name": "kids",
+                  "value": "kids"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Added By",
+              "displayName": "Added By",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Main Garden",
+                  "value": "Main Garden"
+                },
+                {
+                  "name": "Member 1",
+                  "value": "Member 1"
+                },
+                {
+                  "name": "Member 2",
+                  "value": "Member 2"
+                },
+                {
+                  "name": "Member 3",
+                  "value": "Member 3"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "c60cc928-94a1-479d-a523-4b0e46e9d56e",
+      "name": "📕 Mark as Issued",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1408,
+        -1792
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Lent to": "=",
+            "Lending Status": "Available",
+            "Return Date": "=",
+            "Availability Worldwide": "Available "
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Book Title",
+              "displayName": "Book Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Genre",
+              "displayName": "Genre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Language",
+              "displayName": "Language",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cover Image",
+              "displayName": "Cover Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ISBN",
+              "displayName": "ISBN",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Publication Date",
+              "displayName": "Publication Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Publisher",
+              "displayName": "Publisher",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Edition",
+              "displayName": "Edition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Pages",
+              "displayName": "Number of Pages",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Format",
+              "displayName": "Format",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Hardcover",
+                  "value": "Hardcover"
+                },
+                {
+                  "name": "Paperback",
+                  "value": "Paperback"
+                },
+                {
+                  "name": "eBook",
+                  "value": "eBook"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Availability Worldwide",
+              "displayName": "Availability Worldwide",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Available ",
+                  "value": "Available "
+                },
+                {
+                  "name": "Unavailable",
+                  "value": "Unavailable"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lending Status",
+              "displayName": "Lending Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lent out",
+                  "value": "Lent out"
+                },
+                {
+                  "name": "Available",
+                  "value": "Available"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lent to",
+              "displayName": "Lent to",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lend Date",
+              "displayName": "Lend Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Book Condition",
+              "displayName": "Book Condition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Excellent",
+                  "value": "Excellent"
+                },
+                {
+                  "name": "Average",
+                  "value": "Average"
+                },
+                {
+                  "name": "Poor",
+                  "value": "Poor"
+                },
+                {
+                  "name": "Good",
+                  "value": "Good"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Motivational Quotes",
+              "displayName": "Motivational Quotes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Related Events",
+              "displayName": "Related Events",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "Fiction",
+                  "value": "Fiction"
+                },
+                {
+                  "name": "Non-Fiction",
+                  "value": "Non-Fiction"
+                },
+                {
+                  "name": "Classic",
+                  "value": "Classic"
+                },
+                {
+                  "name": "Best Seller",
+                  "value": "Best Seller"
+                },
+                {
+                  "name": "To Read",
+                  "value": "To Read"
+                },
+                {
+                  "name": "Favorite",
+                  "value": "Favorite"
+                },
+                {
+                  "name": "Memoir",
+                  "value": "Memoir"
+                },
+                {
+                  "name": "Psychological",
+                  "value": "Psychological"
+                },
+                {
+                  "name": "Inspirational",
+                  "value": "Inspirational"
+                },
+                {
+                  "name": "Self Help",
+                  "value": "Self Help"
+                },
+                {
+                  "name": "Adventure",
+                  "value": "Adventure"
+                },
+                {
+                  "name": "Mystery",
+                  "value": "Mystery"
+                },
+                {
+                  "name": "History",
+                  "value": "History"
+                },
+                {
+                  "name": "adventure",
+                  "value": "adventure"
+                },
+                {
+                  "name": " classic",
+                  "value": " classic"
+                },
+                {
+                  "name": " pirates",
+                  "value": " pirates"
+                },
+                {
+                  "name": "war",
+                  "value": "war"
+                },
+                {
+                  "name": " friendship",
+                  "value": " friendship"
+                },
+                {
+                  "name": " betrayal",
+                  "value": " betrayal"
+                },
+                {
+                  "name": "tragedy",
+                  "value": "tragedy"
+                },
+                {
+                  "name": " redemption",
+                  "value": " redemption"
+                },
+                {
+                  "name": "thriller",
+                  "value": "thriller"
+                },
+                {
+                  "name": " horror",
+                  "value": " horror"
+                },
+                {
+                  "name": " suspense",
+                  "value": " suspense"
+                },
+                {
+                  "name": " apocalyptic",
+                  "value": " apocalyptic"
+                },
+                {
+                  "name": "mystery",
+                  "value": "mystery"
+                },
+                {
+                  "name": " social",
+                  "value": " social"
+                },
+                {
+                  "name": "Pakistani fiction",
+                  "value": "Pakistani fiction"
+                },
+                {
+                  "name": " social issues",
+                  "value": " social issues"
+                },
+                {
+                  "name": " relationships",
+                  "value": " relationships"
+                },
+                {
+                  "name": "fiction",
+                  "value": "fiction"
+                },
+                {
+                  "name": " romance",
+                  "value": " romance"
+                },
+                {
+                  "name": " drama",
+                  "value": " drama"
+                },
+                {
+                  "name": "social issues",
+                  "value": "social issues"
+                },
+                {
+                  "name": " family drama",
+                  "value": " family drama"
+                },
+                {
+                  "name": "classic",
+                  "value": "classic"
+                },
+                {
+                  "name": " children",
+                  "value": " children"
+                },
+                {
+                  "name": " orphan",
+                  "value": " orphan"
+                },
+                {
+                  "name": " swiss",
+                  "value": " swiss"
+                },
+                {
+                  "name": "children",
+                  "value": "children"
+                },
+                {
+                  "name": " fairy tale",
+                  "value": " fairy tale"
+                },
+                {
+                  "name": " science fiction",
+                  "value": " science fiction"
+                },
+                {
+                  "name": " adventure",
+                  "value": " adventure"
+                },
+                {
+                  "name": "feminism",
+                  "value": "feminism"
+                },
+                {
+                  "name": "socialism",
+                  "value": "socialism"
+                },
+                {
+                  "name": "autobiography",
+                  "value": "autobiography"
+                },
+                {
+                  "name": "humor",
+                  "value": "humor"
+                },
+                {
+                  "name": "kids",
+                  "value": "kids"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Added By",
+              "displayName": "Added By",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Main Garden",
+                  "value": "Main Garden"
+                },
+                {
+                  "name": "Member 1",
+                  "value": "Member 1"
+                },
+                {
+                  "name": "Member 2",
+                  "value": "Member 2"
+                },
+                {
+                  "name": "Member 3",
+                  "value": "Member 3"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "48bcaa79-b9a2-456a-b337-38282596e05f",
+      "name": "📗 Mark as Returned",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1408,
+        -1360
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "khalidwardha1@gmail.com",
+          "mode": "list",
+          "cachedResultName": "khalidwardha1@gmail.com"
+        },
+        "start": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}T09:00:00",
+        "end": "={{ $('📋 Loan Form').item.json['Return Due Date'] }}T10:00:00",
+        "additionalFields": {
+          "description": "=Lent on {{ $now.format('yyyy-MM-dd') }}. Contact: {{ $('📋 Loan Form').item.json[\"Friend's Contact (Email/Phone)\"] }}",
+          "summary": "=📖 Return: {{ $('📋 Loan Form').item.json['Book Title'] }} from {{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}"
+        }
+      },
+      "id": "2645add6-9d3a-4f3b-8616-c85b3a0e972d",
+      "name": "📅 Google Calendar Reminder",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -1184,
+        -2080
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Ux3OqwiZtqKiYHEo",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "task": "MDI3NjkyNjY5Mjc1ODIwMTczNzI6MDow",
+        "title": "={{ $('📋 Loan Form').item.json[\"Book Title\"] }}",
+        "additionalFields": {}
+      },
+      "id": "98d10c1b-36b4-4159-9710-cd8b445136c1",
+      "name": "✅ Google Tasks Reminder",
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        -1888
+      ],
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "lmy72yoBbu7S8DfU",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"embeds\": [{ \"title\": \"📤 Book Issued\", \"description\": \"**{{ $('📋 Loan Form').item.json['Book Title'] }}** lent to **{{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}**.\", \"color\": 15844367, \"fields\": [{ \"name\": \"📅 Due Date\", \"value\": \"{{ $('📋 Loan Form').item.json['Return Due Date'] }}\", \"inline\": true }], \"footer\": { \"text\": \"🌷 Bibliophile Concierge\" } }] }",
+        "options": {}
+      },
+      "id": "b2b73894-2317-40e4-a971-9f8cf5b2877f",
+      "name": "💬 Discord: Book Issued",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1184,
+        -1696
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ",
+          "mode": "list",
+          "cachedResultName": "Bibliophile Vault",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1638214,
+          "mode": "list",
+          "cachedResultName": "Loan Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit#gid=1638214"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('📋 Loan Form').item.json[\"Book Title\"] }}",
+            "Action": "={{ $('📋 Loan Form').item.json.Action }}",
+            "Author": "={{ $('🔎 Find Book in Vault').item.json.Author }}",
+            "Lent to": "={{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}",
+            "Lend Date": "={{ $('📋 Loan Form').item.json.submittedAt }}",
+            "Expected Return Date": "={{ $('📋 Loan Form').item.json[\"Return Due Date\"] }}",
+            "Condition": "={{ $('🔎 Find Book in Vault').item.json[\"Book Condition\"] }}"
+          },
+          "matchingColumns": [
+            "Title"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lent to",
+              "displayName": "Lent to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lend Date",
+              "displayName": "Lend Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expected Return Date",
+              "displayName": "Expected Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Condition",
+              "displayName": "Condition",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action",
+              "displayName": "Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a9f8b23b-222b-4985-91f4-2b77e17d99ba",
+      "name": "📒 Sheets Loan Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1184,
+        -1408
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3jU497jxX3N4Nz8Z",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "Karachi,PK"
+            },
+            {
+              "name": "appid",
+              "value": "dfe155a8638638a991868df06e158a27"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "58b70818-b208-41fd-818c-d8c180fa3eee",
+      "name": "🌤️ Check Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4752,
+        -1456
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const w = $input.first().json.weather?.[0]?.main || 'Clear';\nconst map = { Rain:'Poetry', Drizzle:'Poetry', Clouds:'Novels', Clear:'Novels', Snow:'Children', Thunderstorm:'Religion', Mist:'Biography', Fog:'Biography', Haze:'Biography' };\nreturn [{ json: { weather: w, suggestedGenre: map[w] || 'Novels' } }];"
+      },
+      "id": "50325d3f-3b81-4537-aa2e-fbf96fb32626",
+      "name": "🍃 Weather → Genre",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4528,
+        -1456
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "filterByFormula": "=",
+        "options": {}
+      },
+      "id": "6d3b8b23-c096-4980-b668-785d8f3abfc7",
+      "name": "🌸 Pick a Book for Today",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4304,
+        -1456
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=☀️ **Today's Reading Suggestion** Today is a **{{ $('🍃 Weather → Genre').item.json.suggestedGenre }} Day** in Karachi ({{ $node[\"🌤️ Check Weather\"].json[\"weather\"][0][\"main\"] }})!  📖 **Book Title:** {{ $json[\"Book Title\"] }} ✍️ **Author:** {{ $json[\"Author\"] }} 📑 **Condition:** {{ $json[\"Book Condition\"] }}  💡 *“{{ $json[\"Motivational Quotes\"] }}”*  🌸 *Water your mind today — Bibliophile Concierge* 🤖 `System Status: Active | v1.2`"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cac928f1-b7b1-45e0-8196-eed4e27e2620",
+      "name": "💬 Discord Daily Suggestion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3632,
+        -1456
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      },
+      "id": "1013f20f-5684-411c-be59-0dd05767c330",
+      "name": "⏰ Daily Overdue Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4976,
+        -928
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "filterByFormula": "AND({Lending Status} = 'Lent out', IS_BEFORE({Return Date}, TODAY()))",
+        "options": {}
+      },
+      "id": "fed6d8e9-d2e0-4c72-817a-ea7ca873cffb",
+      "name": "⚠️ Find Overdue Books",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4752,
+        -928
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "khalidwardha1@gmail.com",
+        "subject": "=⚠️ Overdue Book/Books:  {{ $json.concatenated_Book_Title }}\n",
+        "message": "=<div style='font-family:Georgia, serif; background: linear-gradient(135deg, #fef6e4, #f3d2c1); padding: 32px; border-radius: 20px; color: #6b4226; max-width: 480px; margin: auto;'>\n  <h2 style='color: #c0392b;'>⚠️ Overdue Book Alert</h2>\n  \n  <p>The following items in the <b>Bibliophile Vault</b> are past their return date:</p>\n  \n  <div style='background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px; border-left: 5px solid #c0392b;'>\n    <b>{{ $json[\"concatenated_Book_Title\"] }}</b>\n  </div>\n\n  <p style='margin-top: 20px;'>Please follow up with the borrowers to ensure the collection stays complete.</p>\n  \n  <p style='margin-top: 24px; color: #7a9e7e; font-style: italic;'>🌷 Bibliophile Concierge — Your Enchanted Library</p>\n</div>",
+        "options": {}
+      },
+      "id": "7ec17649-7b85-448a-b115-132118fde589",
+      "name": "📧 Gmail: Overdue Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -4304,
+        -1024
+      ],
+      "webhookId": "ed1480f3-7a1e-49ff-bf3d-c511a8c6336d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eMROctaeHLg44I8i",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [\n    {\n      \"title\": \"⚠️ Overdue Book!\",\n      \"description\": \"**{{ $json['Book Title'] }}** was due on {{ $json['Lend Date'] }}.\",\n      \"color\": 15158332,\n      \"fields\": [\n        {\n          \"name\": \"👤 Lent To\",\n          \"value\": \"{{ $json['Lending Status'] }}\",\n          \"inline\": true\n        }\n      ],\n      \"footer\": {\n        \"text\": \"🌷 Please follow up — Bibliophile Concierge\"\n      }\n    }\n  ]\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "d9795789-a329-42cc-8e53-2e678323fe7c",
+      "name": "💬 Discord Overdue Ping",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4528,
+        -832
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "248667b8-3b9b-4892-b52b-76ea8dd87083",
+      "name": "🌅 Daily 8AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4992,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "khalidwardha1@gmail.com",
+        "subject": "=🌱 Water Your Mind — Code {{ JSON.parse($json.content.parts[0].text).unique_code }}",
+        "message": "=<div style='font-family:Georgia,serif;background:linear-gradient(135deg,#fef6e4,#f3d2c1);padding:32px;border-radius:20px;color:#6b4226;max-width:480px;margin:auto;'>\n  <h2 style='color:#7a9e7e;letter-spacing:1px;'>🌿 Water Your Mind</h2>\n  \n  <blockquote style='font-size:20px;font-style:italic;border-left:4px solid #d4a373;padding-left:16px;margin:20px 0;'>\n    &ldquo;{{ JSON.parse($json.content.parts[0].text).quote }}&rdquo;\n  </blockquote>\n  \n  <p style='color:#9b7b5a;'>— {{ JSON.parse($json.content.parts[0].text).attribution }}</p>\n  \n  <div style='background:#fffaf0;border:1.5px solid #d4a373;border-radius:12px;padding:14px;margin-top:20px;text-align:center;'>\n    <span style='font-size:13px;color:#9b7b5a;'>Today's Code</span><br/>\n    <b style='font-size:22px;letter-spacing:3px;color:#6b4226;'>{{ JSON.parse($json.content.parts[0].text).unique_code }}</b>\n  </div>\n  \n  <p style='margin-top:24px;color:#7a9e7e;font-size:13px;font-style:italic;text-align:center;'>\n    🌷 Bibliophile Concierge — Your Enchanted Library Garden\n  </p>\n</div>",
+        "options": {}
+      },
+      "id": "250d6974-3068-4f6a-a493-06cf84f33646",
+      "name": "📧 Gmail: Water Your Mind",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -4416,
+        -448
+      ],
+      "webhookId": "50640b9b-953f-4245-9ea2-e97594431219",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eMROctaeHLg44I8i",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [\n    {\n      \"title\": \"🌅 Water Your Mind\",\n      \"description\": \"> *{{ JSON.parse($json.content.parts[0].text).quote }}*\\n> — {{ JSON.parse($json.content.parts[0].text).attribution }}\",\n      \"color\": 16738740,\n      \"footer\": {\n        \"text\": \"🔑 Daily Code: {{ JSON.parse($json.content.parts[0].text).unique_code }} | Bibliophile Concierge 🌷\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "5bdba321-2ff8-4171-8f16-fa0f32a051c9",
+      "name": "💬 Discord Daily Quote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4416,
+        -256
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "path": "fd79b2ae-06be-4762-9e7a-beaa417e16ca",
+        "formTitle": "🔍 Search Your Enchanted Library",
+        "formDescription": "Search for any character, quote, topic, or theme across all your books and PDFs.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Search Query",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Email (results will be sent here)",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "customCss": "body{background:linear-gradient(135deg,#fef6e4,#f3d2c1);font-family:Georgia,serif;}.form-container{background:#fffaf0;border:2px solid #d4a373;border-radius:20px;box-shadow:0 8px 32px rgba(120,80,40,0.18);padding:32px;}h1{color:#6b4226;}label{color:#7a5c3a;font-weight:bold;}input{border:1.5px solid #d4a373 !important;border-radius:10px !important;background:#fffdf7 !important;}button{background:linear-gradient(135deg,#7a9e7e,#4a7c59) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;}"
+        }
+      },
+      "id": "1aec1276-16a0-4819-ac24-d1ec7a73c17e",
+      "name": "🔍 Book Search Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [
+        -5008,
+        224
+      ],
+      "webhookId": "fd79b2ae-06be-4762-9e7a-beaa417e16ca"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "filterByFormula": "=OR(SEARCH(LOWER(TRIM(\"{{ $json['Search Query'] }}\")), LOWER({Notes})), SEARCH(LOWER(TRIM(\"{{ $json['Search Query'] }}\")), LOWER({Summary})), SEARCH(LOWER(TRIM(\"{{ $json['Search Query'] }}\")), LOWER({Book Title})))",
+        "options": {}
+      },
+      "id": "1b34a473-c2f5-4342-a354-26ca0c9fba68",
+      "name": "🔎 Search in Vault",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -4784,
+        128
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json[\"Search Query\"] }}",
+        "returnAll": true,
+        "filter": {},
+        "options": {}
+      },
+      "id": "64bd3e13-4cf0-4a74-81aa-a6b909c8e730",
+      "name": "📁 Google Drive PDF Search",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4784,
+        320
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YyTqaYfMF5WHNEjv",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node[\"🔍 Book Search Form\"].json[\"Your Email (results will be sent here)\"] }}",
+        "subject": "=🔎 Library Search: {{ $('🔍 Book Search Form').item.json['Search Query'] }}",
+        "message": "=<div style='font-family:Georgia,serif;background:linear-gradient(135deg,#fef6e4,#f3d2c1);padding:32px;border-radius:20px;color:#6b4226;max-width:480px;margin:auto;'><h2 style='color:#7a9e7e;'>🔍 Your Search Results</h2><p>Query: <b>{{ $('🔍 Book Search Form').item.json['Search Query'] }}</b></p><hr style='border:1px solid #d4a373;'/><p style='line-height:1.8;'>{{ $json.candidates[0].content.parts[0].text }}</p><p style='margin-top:24px;color:#9b7b5a;font-size:13px;font-style:italic;text-align:center;'>🌷 Bibliophile Concierge — Your Enchanted Library Garden</p></div>\n",
+        "options": {}
+      },
+      "id": "ceab9a6c-4ebe-4d7c-b07d-a18e1af3c3a2",
+      "name": "📧 Gmail: Search Results",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -3984,
+        224
+      ],
+      "webhookId": "0aec7628-d9a3-417c-b1ec-386d79a4b02b",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eMROctaeHLg44I8i",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "options": {}
+      },
+      "id": "7f83f2a5-e032-41eb-ba7d-bea4c5b03a80",
+      "name": "🏁 Find Completed Books",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2128,
+        -768
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $node[\"GenerateArchiveContent\"].json.message.content.instagram_caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2bdade05-cda2-46af-88ac-cc3af3486a78",
+      "name": "💬 Discord: Book Completed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1104,
+        -960
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": "wardha-netizen",
+        "repository": "bibliophile-concierge",
+        "filePath": "=summaries/Archive_{{ $now.format('yyyy-MM-dd') }}.md",
+        "fileContent": "={{ $json.message.content.markdown_summary }}",
+        "commitMessage": "=Archive for {{ $now.format('yyyy-MM-dd') }}"
+      },
+      "id": "8fcab01e-b435-4c01-83b5-a83194560fe8",
+      "name": "🐙 GitHub Summary",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        -768
+      ],
+      "webhookId": "6eb4371a-7a89-476d-a94c-393aaeeec1e9",
+      "credentials": {
+        "githubApi": {
+          "id": "BX1w5JnjaTnLl4BK",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ",
+          "mode": "list",
+          "cachedResultName": "Bibliophile Vault",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2133695729,
+          "mode": "list",
+          "cachedResultName": "Archive Logs Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit#gid=2133695729"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Archive Date": "={{ $now.format('yyyy-MM-dd') }}",
+            "AI Summary": "={{ $('Basic LLM Chain').item.json.text }}",
+            "Books Completed": "={{ $('Summarize1').item.json.concatenated_fieldsBook_Title }}",
+            "Github Link": "=https://github.com/wardha-netizen/bibliophile-concierge/blob/main/summaries/Archive_{{ $now.format('yyyy-MM-dd') }}.md",
+            "YouTube Highlights": "={{ $json.VideoTitle.map((title, index) => \"• \" + title + \": https://youtu.be/\" + $json.VideoID[index]).join('\\n') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Books Completed",
+              "displayName": "Books Completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Archive Date",
+              "displayName": "Archive Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Github Link",
+              "displayName": "Github Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "YouTube Highlights",
+              "displayName": "YouTube Highlights",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5aa9a488-4d11-4bf6-b08f-99919a5a3041",
+      "name": "📒 Sheets: Log Completed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -656,
+        -576
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3jU497jxX3N4Nz8Z",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyBvhgifheJiYgVEqLLnH6VbgGpWhBgSvVc"
+            },
+            {
+              "name": "q",
+              "value": "={{ $('GenerateArchiveContent').item.json.message.content.youtube_search }}"
+            },
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "maxResults",
+              "value": "1"
+            },
+            {
+              "name": "type",
+              "value": "video"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f5d2505f-0530-49d8-aaf0-37002b354e82",
+      "name": "▶️ YouTube Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1104,
+        -576
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "list",
+          "cachedResultName": "Bibliophile",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblENLBbFVBYaEahV",
+          "mode": "list",
+          "cachedResultName": "Books",
+          "cachedResultUrl": "https://airtable.com/apptGlLDt9VHCE9ey/tblENLBbFVBYaEahV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Is Archived": true,
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Book Title",
+              "displayName": "Book Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Genre",
+              "displayName": "Genre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Language",
+              "displayName": "Language",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cover Image",
+              "displayName": "Cover Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ISBN",
+              "displayName": "ISBN",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Publication Date",
+              "displayName": "Publication Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Publisher",
+              "displayName": "Publisher",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Edition",
+              "displayName": "Edition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Number of Pages",
+              "displayName": "Number of Pages",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Format",
+              "displayName": "Format",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Hardcover",
+                  "value": "Hardcover"
+                },
+                {
+                  "name": "Paperback",
+                  "value": "Paperback"
+                },
+                {
+                  "name": "eBook",
+                  "value": "eBook"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Availability Worldwide",
+              "displayName": "Availability Worldwide",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Available ",
+                  "value": "Available "
+                },
+                {
+                  "name": "Unavailable",
+                  "value": "Unavailable"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Lending Status",
+              "displayName": "Lending Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lent out",
+                  "value": "Lent out"
+                },
+                {
+                  "name": "Available",
+                  "value": "Available"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Lent to",
+              "displayName": "Lent to",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Lend Date",
+              "displayName": "Lend Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Book Condition",
+              "displayName": "Book Condition",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Excellent",
+                  "value": "Excellent"
+                },
+                {
+                  "name": "Average",
+                  "value": "Average"
+                },
+                {
+                  "name": "Poor",
+                  "value": "Poor"
+                },
+                {
+                  "name": "Good",
+                  "value": "Good"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Motivational Quotes",
+              "displayName": "Motivational Quotes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Related Events",
+              "displayName": "Related Events",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "Fiction",
+                  "value": "Fiction"
+                },
+                {
+                  "name": "Non-Fiction",
+                  "value": "Non-Fiction"
+                },
+                {
+                  "name": "Classic",
+                  "value": "Classic"
+                },
+                {
+                  "name": "Best Seller",
+                  "value": "Best Seller"
+                },
+                {
+                  "name": "To Read",
+                  "value": "To Read"
+                },
+                {
+                  "name": "Favorite",
+                  "value": "Favorite"
+                },
+                {
+                  "name": "Memoir",
+                  "value": "Memoir"
+                },
+                {
+                  "name": "Psychological",
+                  "value": "Psychological"
+                },
+                {
+                  "name": "Inspirational",
+                  "value": "Inspirational"
+                },
+                {
+                  "name": "Self Help",
+                  "value": "Self Help"
+                },
+                {
+                  "name": "Adventure",
+                  "value": "Adventure"
+                },
+                {
+                  "name": "Mystery",
+                  "value": "Mystery"
+                },
+                {
+                  "name": "History",
+                  "value": "History"
+                },
+                {
+                  "name": "adventure",
+                  "value": "adventure"
+                },
+                {
+                  "name": " classic",
+                  "value": " classic"
+                },
+                {
+                  "name": " pirates",
+                  "value": " pirates"
+                },
+                {
+                  "name": "war",
+                  "value": "war"
+                },
+                {
+                  "name": " friendship",
+                  "value": " friendship"
+                },
+                {
+                  "name": " betrayal",
+                  "value": " betrayal"
+                },
+                {
+                  "name": "tragedy",
+                  "value": "tragedy"
+                },
+                {
+                  "name": " redemption",
+                  "value": " redemption"
+                },
+                {
+                  "name": "thriller",
+                  "value": "thriller"
+                },
+                {
+                  "name": " horror",
+                  "value": " horror"
+                },
+                {
+                  "name": " suspense",
+                  "value": " suspense"
+                },
+                {
+                  "name": " apocalyptic",
+                  "value": " apocalyptic"
+                },
+                {
+                  "name": "mystery",
+                  "value": "mystery"
+                },
+                {
+                  "name": " social",
+                  "value": " social"
+                },
+                {
+                  "name": "Pakistani fiction",
+                  "value": "Pakistani fiction"
+                },
+                {
+                  "name": " social issues",
+                  "value": " social issues"
+                },
+                {
+                  "name": " relationships",
+                  "value": " relationships"
+                },
+                {
+                  "name": "fiction",
+                  "value": "fiction"
+                },
+                {
+                  "name": " romance",
+                  "value": " romance"
+                },
+                {
+                  "name": " drama",
+                  "value": " drama"
+                },
+                {
+                  "name": "social issues",
+                  "value": "social issues"
+                },
+                {
+                  "name": " family drama",
+                  "value": " family drama"
+                },
+                {
+                  "name": "classic",
+                  "value": "classic"
+                },
+                {
+                  "name": " children",
+                  "value": " children"
+                },
+                {
+                  "name": " orphan",
+                  "value": " orphan"
+                },
+                {
+                  "name": " swiss",
+                  "value": " swiss"
+                },
+                {
+                  "name": "children",
+                  "value": "children"
+                },
+                {
+                  "name": " fairy tale",
+                  "value": " fairy tale"
+                },
+                {
+                  "name": " science fiction",
+                  "value": " science fiction"
+                },
+                {
+                  "name": " adventure",
+                  "value": " adventure"
+                },
+                {
+                  "name": "feminism",
+                  "value": "feminism"
+                },
+                {
+                  "name": "socialism",
+                  "value": "socialism"
+                },
+                {
+                  "name": "autobiography",
+                  "value": "autobiography"
+                },
+                {
+                  "name": "humor",
+                  "value": "humor"
+                },
+                {
+                  "name": "kids",
+                  "value": "kids"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Added By",
+              "displayName": "Added By",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Main Garden",
+                  "value": "Main Garden"
+                },
+                {
+                  "name": "Member 1",
+                  "value": "Member 1"
+                },
+                {
+                  "name": "Member 2",
+                  "value": "Member 2"
+                },
+                {
+                  "name": "Member 3",
+                  "value": "Member 3"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Is Archived",
+              "displayName": "Is Archived",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "392a7bce-d9d5-4598-9ad2-655aaefe4ce8",
+      "name": "✅ Mark as Posted",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1904,
+        -768
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "d18624cb-ad72-47e9-aa13-bffc5ddf3fe5",
+        "formTitle": "📚 Request a Book from the Library",
+        "formDescription": "Tell your team which book you want. They'll get a WhatsApp notification instantly!",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Book Title You Want",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Why do you want it? (optional)",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "How urgent?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "🟢 Whenever free"
+                  },
+                  {
+                    "option": "🟡 This week"
+                  },
+                  {
+                    "option": "🔴 ASAP"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "customCss": "body{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);font-family:Georgia,serif;}.form-container{background:#fff;border:2px solid #66bb6a;border-radius:20px;box-shadow:0 8px 32px rgba(74,124,89,0.18);padding:32px;}h1{color:#2e7d32;}label{color:#388e3c;font-weight:bold;}input,textarea,select{border:1.5px solid #66bb6a !important;border-radius:10px !important;}button{background:linear-gradient(135deg,#43a047,#2e7d32) !important;border-radius:999px !important;color:#fff !important;font-size:1.1em !important;padding:12px 36px !important;border:none !important;}"
+        }
+      },
+      "id": "c8065334-6899-411e-8284-70bdb80fc88e",
+      "name": "📋 Book Request Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.1,
+      "position": [
+        -2400,
+        -80
+      ],
+      "webhookId": "d18624cb-ad72-47e9-aa13-bffc5ddf3fe5"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apptGlLDt9VHCE9ey",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Books",
+          "mode": "name"
+        },
+        "filterByFormula": "=SEARCH(LOWER(\"{{ $json['Book Title You Want'] }}\"), LOWER({Book Title}))",
+        "options": {}
+      },
+      "id": "03c9e5c0-dd7a-4140-a32e-4d0ec226922d",
+      "name": "🔎 Check If Book Available",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2176,
+        -80
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "OxR57qYZEfbQVDwp",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const requestor = $('📋 Book Request Form').item.json['Your Name'];\nconst bookWanted = $('📋 Book Request Form').item.json['Book Title You Want'];\nconst reason = $('📋 Book Request Form').item.json['Why do you want it? (optional)'] || 'No reason given';\nconst urgency = $('📋 Book Request Form').item.json['How urgent?'] || '🟢 Whenever free';\n\nconst found = $input.all();\nlet status = '❓ Not in library yet';\nlet foundTitle = bookWanted;\n\n// Ensure the code uses 'Book Title' to match Airtable\nif (found.length > 0 && found[0].json.fields) {\n  const s = found[0].json.fields.Status || 'Unknown';\n  \n  // FIXED: Changed .Title to .['Book Title']\n  foundTitle = found[0].json.fields['Book Title'] || bookWanted;\n  \n  if (s === 'Available') status = '✅ AVAILABLE NOW';\n  else if (s === 'Issued') status = `📕 Currently lent out (due ${found[0].json.fields['Due Date'] || '?'})`;\n  else status = `📌 ${s}`;\n}\n\nconst msg = `📚 *Book Request — Bibliophile Concierge*\\n\\n👤 *From:* ${requestor}\\n📖 *Book:* ${foundTitle}\\n📊 *Status:* ${status}\\n⚡ *Urgency:* ${urgency}\\n💬 *Reason:* ${reason}\\n\\n🌷 _Respond on WhatsApp to confirm!_`;\n\nreturn [{ json: { message: msg, requestor, bookWanted: foundTitle, status, urgency } }];"
+      },
+      "id": "44cb6797-22ef-49b2-a702-ffa8d0352a93",
+      "name": "📝 Build Request Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ",
+          "mode": "list",
+          "cachedResultName": "Bibliophile Vault",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2033175267,
+          "mode": "list",
+          "cachedResultName": "Log Resquest Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uAE8q1EjdE__pLJmxqjVAIWOrEfd3jeHjGydjpm4EDQ/edit#gid=2033175267"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Book Title": "={{ $('📋 Book Request Form').item.json[\"Book Title You Want\"] }}",
+            "Requestor": "={{ $('📋 Book Request Form').item.json[\"Your Name\"] }}",
+            "Date Requested": "={{ $('📋 Book Request Form').item.json.submittedAt }}",
+            "Urgency": "={{ $('📋 Book Request Form').item.json[\"How urgent?\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Book Title",
+              "displayName": "Book Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Requestor",
+              "displayName": "Requestor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Requested",
+              "displayName": "Date Requested",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c5861f52-d766-4f7a-9ea3-9d5a4e7cb5ab",
+      "name": "📒 Log Request in Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1728,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3jU497jxX3N4Nz8Z",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -4560,
+        224
+      ],
+      "id": "3256df57-4dae-4c3b-a1a9-f29c304de7e3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAANaspkL6zIBRQr8lztCjM7UucJH9gQ5ZAu3VfSlYAV515HvLGZCKcAosg5b2KLCf6QzpQJ9ml2CO1P4rK44iHUqI2PxDpk96KjLefZBLVFsHbuxzXtwfLwRS8xZCHnkmKI3wl1OBVZAYQWVET7YV5FUJlVuTRGdGYqHINspbcJSQMXXHKh3cIc6dZCdoxSjfU3mAhQ7lZCw5ZBLtIHd2X4YZBhCXWehzhkAjEbo6cOKheHxxfLZCuxwyvyX6yL17EcZBmzzwQxhx1bj5TMscc3neoB"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"+923340391648\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $json.message }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "d03a8e86-65b2-4ff0-b73d-a717c6480d0b",
+      "name": "Wardha Whatsapp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1728,
+        -272
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -4080,
+        -1984
+      ],
+      "id": "7607be2c-89af-49f5-8de9-3549d346e979",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f082baf1-6588-4186-b19b-1fac62b94f18",
+              "leftValue": "={{ $json[\"Lending Status\"] }}",
+              "rightValue": "Available",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1632,
+        -1696
+      ],
+      "id": "21c65554-7a24-4d2d-8c01-2463abdcca68",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1500211049113190552/AqZ5ib8wGq-7NdlsrZR0enbyd8U8kM4uSItd80DafG-0SWCk_FAt6DhPCy6g-XjwhR_N",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $json[\"Book Title\"] }} is already Lent out!!😔 Requested by: *{{ $('📋 Loan Form').item.json[\"Friend's Name\"] }}*"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0a0ab95d-b7e9-4f08-8b61-1b3c282ddfec",
+      "name": "Alert: Already Lent Out",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1408,
+        -1552
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -3840,
+        -1456
+      ],
+      "id": "ff17d8da-3778-4f99-9f07-ab4dae737654",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "concatenate",
+              "field": "Book Title",
+              "separateBy": "\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -4528,
+        -1024
+      ],
+      "id": "59a2e086-3382-454d-92ac-d6bf6ee03271",
+      "name": "Summarize"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "concatenate",
+              "field": "fields[\"Book Title\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -1680,
+        -768
+      ],
+      "id": "1ae9e5bd-c1b7-4315-b43a-424aa752e732",
+      "name": "Summarize1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {},
+            {
+              "fieldToAggregate": "id.videoID",
+              "renameField": true,
+              "outputFieldName": "VideoID"
+            },
+            {
+              "fieldToAggregate": "snippet.title",
+              "renameField": true,
+              "outputFieldName": "VideoTitle"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        -576
+      ],
+      "id": "18e9fe0f-52a7-492f-ada3-7ab4004db1ec",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Book_Title:{{ $('📖 Book Intake Form').item.json[\"Book Title\"] }}\nAuthor_InitAial:{{ $('📖 Book Intake Form').item.json[\"Author (optional)\"] }}\nAdded_By:{{ $('📖 Book Intake Form').item.json[\"Owner / Shelf\"] }}\nTask: \nTask: \nAct as a professional librarian. Return ONLY a JSON object with these exact keys:\n1. \"author\": Full name of the author.\n2. \"genre\": Primary genre.\n3. \"language\": The language the book is written in.\n4. \"isbn\": 13-digit ISBN.\n5. \"pages\": Total page count (number only).\n6. \"publisher\": Full name of the publishing house.\n7. \"publication_date\": \"Return the date in YYYY-MM-DD format (e.g., 1999-11-01).\"\n8. \"cover_image_url\": A direct URL to a high-quality cover image.\n9. \"related_events\": Historical or cultural events related to the book.\n10. \"edition\": e.g., '1st Edition'.\n11. \"book_condition\": 'New' or 'Good'.\n12. \"tags\": 3 keywords (e.g., \"mystery, classic, detective\").\n13. \"motivational_quote\": A famous line from the book.\n14. For the \"availability\" key: \n   - If it is widely available for purchase, return \"Availabale\". \n   - If it is out of print, rare, or hard to find, return \"Lent out\".\n15. \"price\": Estimated market price.\n16. \"format\": 'Hardcover' or 'Paperback'.\n17. \"summary\": 2-sentence description.\n18. \"rating\": A number from 1 to 5.\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "You are a librarian. Return STRICT JSON only: { \"genre\": one of Novels/Poetry/Education/Religion/Biography/Science/Children/Other, \"plant_spirit\": flower matching genre (Poetry=Lily, Novels=Rose, Education=Oak, Religion=Lotus, Biography=Sunflower, Science=Fern, Children=Daisy, Other=Ivy), \"one_line_summary\": string, \"estimated_price_usd\": number, \"mood_tag\": one of cozy/adventurous/melancholic/intellectual/spiritual/playful }"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -3888,
+        -1984
+      ],
+      "id": "22a78636-e0bc-4e3a-9915-6968c4a3d814",
+      "name": "🤖 AI: Genre + Plant Spirit",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0HnwEUZz9iThLRh8",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Generate today's \"Water Your Mind\" motivational message for the library garden. Ensure the quote feels enchanted and aligns with a \"nurture thoughts\" theme."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "You are a poetic librarian for the Bibliophile Concierge. Return STRICT JSON ONLY. Do not include any conversational text before or after the JSON.  Required JSON Format: { \"unique_code\": \"6-char alphanumeric\", \"quote\": \"under 25 words\", \"attribution\": \"author or book name\" }"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4768,
+        -352
+      ],
+      "id": "5b37a72b-4daf-4a96-b9af-c435eb24ffa8",
+      "name": "🤖 AI: Genre + Plant Spirit1",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0HnwEUZz9iThLRh8",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Query: {{ $('🔍 Book Search Form').item.json['Search Query'] }}\n\nMatches: {{ JSON.stringify($('🔎 Search in Vault').all()) }}\n\nPDFs: {{ $('📁 Google Drive PDF Search').all().map(i => i.json.name).join(', ') || 'none' }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "You are a friendly librarian. Given a search query and matched books, write a warm, concise reply under 600 chars listing what was found and the most relevant result."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4336,
+        224
+      ],
+      "id": "1f3ca0b4-4994-445a-a648-ad63f0cafb45",
+      "name": "🤖 AI: Genre + Plant Spirit2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0HnwEUZz9iThLRh8",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -544
+      ],
+      "id": "2e04da59-dcf9-42b9-a43d-f07211b7fdd4",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "UQ6anEDRDWGcPBy8",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.concatenated_fieldsBook_Title }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a library archivist. I am providing a list of books completed today! Please generate a Daily Archive Report. Return STRICT JSON only with these keys: 'summary', 'youtube_search', and 'instagram_caption'"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1456,
+        -768
+      ],
+      "id": "bbf41362-22af-4a4a-b9d4-b5b1a82ada7f",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2352,
+        -768
+      ],
+      "id": "51c75a74-02ce-4d1d-9266-b0334ce99df2",
+      "name": "🌙 Evening Completed Check"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/1065060516697855/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAANaspkL6zIBRdW0z1JRzGxZCFMmwZCLFDwxb74RZAoXm7ZBJCuzI3aCLx39aBW63KdnFJt0syMdW52BluDrhD5uG5v1Rpq9ZCgXORMK5zsvnvFZBeID9PMpnTpz3HyZCdLzW1m9QGxrzAz1owqs6lmVUAY5qOZBh7eYIjZBcMd8ZC8uhkOV85zwhPgy58xkMf8aMkniT7J5JTlxLzSNYWiW3NyvXofVhjAVlKIN2GGN84Bq6ULOzqqCoF7hHXI45gEsJZBlx20pHNU6SoA8GhghtY1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"923340391648\", \"type\": \"text\", \"text\": { \"body\": \"📖 *Book Now Available!*\\n\\n✅ *{{ $('📋 Loan Form').item.json['Book Title'] }}* has been returned by {{ $('📋 Loan Form').item.json['Friend\\'s Name'] }}.\\n\\nFirst come, first served! 🌷\" } }",
+        "options": {}
+      },
+      "id": "692c1dd7-836b-40e3-bf99-660f5f9b7597",
+      "name": "Wardha Whatsapp2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        -1408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "13e05188-71a9-4124-96f0-71fa2690fe7d",
+      "name": "⏰ Daily 9AM acc to Weather",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4976,
+        -1456
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "khalidwardha1@gmail.com",
+        "subject": "=📚 Weekly Karachi Literary Digest — {{ $now.toFormat('dd MMM yyyy') }}",
+        "message": "=<div style=\"background-color: #2e1a47; padding: 30px; font-family: 'Georgia', serif; color: #f4e4bc; border: 8px double #d4af37; border-radius: 15px;\">\n  <h1 style=\"text-align: center; color: #ffd700; text-shadow: 2px 2px #000; border-bottom: 2px solid #d4af37; padding-bottom: 15px;\">\n    📜 The Bibliophile’s Global Scroll 📜\n  </h1>\n\n{{ $json.finalHtml[0] }}\n\n  <footer style=\"margin-top: 30px; text-align: center; font-size: 0.9em; color: #d4af37; border-top: 1px solid #d4af37; padding-top: 15px;\">\n    Sent automatically by your 🖋️ Enchanted Concierge\n  </footer>\n</div>",
+        "options": {}
+      },
+      "id": "65fcc0f8-9eb2-4bcf-acc1-83afd52f365b",
+      "name": "📬 Gmail: Send Literary Digest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -3376,
+        656
+      ],
+      "webhookId": "155aa93d-7274-4155-9380-272c3f871b93",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eMROctaeHLg44I8i",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "b62a428f-9e4f-44cc-8753-491afe183b49",
+      "name": "⏰ Weekly News & Updates",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -5024,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        976
+      ],
+      "id": "af6646d4-846d-47aa-882b-e8235f545b7d",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "UQ6anEDRDWGcPBy8",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Act as a world-class Literary Curator. I am providing you with a list of global news and events.\n\n### YOUR GOAL:\nFilter the data to keep ONLY items related to:\n- New book releases and global publishing news.\n- Literary awards (like the Booker, Nobel, etc.).\n- Major book festivals and poetry events (Worldwide & Karachi).\n- Library openings or major author interviews.\n\n### STRICT EXCLUSION RULES (The \"Firewall\"):\nImmediately delete any items related to:\n- Politics, wars, drug trafficking, or government disputes.\n- Crimes, killings, or protests.\n- General entertainment (movies/celebrities) unless they are specifically about a book adaptation.\n- \"Vehicle inspection\" or general city administration.\n\n### OUTPUT FORMAT:\nReturn a valid JSON array of objects. Do not include any conversational text.\nRequired fields:\n- \"title\": (Title of the news)\n- \"link\": (URL)\n- \"description\": (One clear sentence summary)\n- \"eventDate\": (YYYY-MM-DD. If no specific date is mentioned, use \"2026-05-10\")\n\n### DATA TO PROCESS:\n{{ JSON.stringify($input.all().map(item => item.json)) }}\nIMPORTANT: Return ONLY the raw JSON array. No backticks ( ```json ), no explanations.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -4128,
+        752
+      ],
+      "id": "57a1a076-5af3-4fbc-b35a-f6c6eccbe074",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "sendTo": "=khalidwardha1@gmail.com",
+        "subject": "=📚 *Book Requested!",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "233a9d1f-ae62-4436-88ab-5c5f6d5b7eb5",
+      "name": "📧 Gmail: Search Results1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1728,
+        -80
+      ],
+      "webhookId": "0aec7628-d9a3-417c-b1ec-386d79a4b02b",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eMROctaeHLg44I8i",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -4576,
+        752
+      ],
+      "id": "2b5ed6aa-3269-4580-b05e-0f57d2bdbb0c",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "organic_results",
+              "renameField": true,
+              "outputFieldName": "book_news"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -4352,
+        752
+      ],
+      "id": "8d9c2148-0e38-411c-a3bd-92c02eae254e",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list",
+          "cachedResultName": "primary"
+        },
+        "start": "={{ $json.eventDate }}T10:00:00Z",
+        "end": "={{ $json.eventDate }}T11:00:00Z",
+        "additionalFields": {
+          "description": "=Source: {{ $json.link }}",
+          "summary": "=[International Event] {{ $json.title }}"
+        }
+      },
+      "id": "b54b4a56-e440-4238-9947-b3965dfad05b",
+      "name": "📅 Google Calendar: Tentative Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -3552,
+        864
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Ux3OqwiZtqKiYHEo",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Change Mode to: \"Run Once for All Items\"\nconst responseText = $input.first().json.text;\n\n// Clean up any extra text the AI might have added\nconst cleanText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();\n\ntry {\n    const events = JSON.parse(cleanText);\n    // This part ensures Google Calendar gets a clean YYYY-MM-DD date\n    return events.map(e => ({\n        json: {\n            ...e,\n            eventDate: e.eventDate.includes('T') ? e.eventDate.split('T')[0] : e.eventDate\n        }\n    }));\n} catch (err) {\n    return [{ json: { title: \"Global Literary Update\", description: \"Check news for May 2026\", eventDate: \"2026-05-19\" } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3760,
+        864
+      ],
+      "id": "285c2de6-7a0e-47eb-ace0-21bd3d988ec7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "q": "\"British Council literature events 2026\" OR \"International Booker Prize winner\" OR \"major book festivals worldwide May 2026\"",
+        "additionalFields": {
+          "num": "10"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApi",
+      "typeVersion": 1,
+      "position": [
+        -4800,
+        752
+      ],
+      "id": "34775ae6-379f-4e02-a104-eb5485b9ad10",
+      "name": "Google search",
+      "credentials": {
+        "serpApi": {
+          "id": "DE5flUjokOmj5QVC",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $node[\"Basic LLM Chain1\"].json.text;\n\n// Extracting the JSON array from the LLM text\nconst start = rawText.indexOf('[');\nconst end = rawText.lastIndexOf(']') + 1;\n\nif (start === -1 || end === 0) {\n  return [{ json: { myHtml: \"<p>No data found in AI response.</p>\" } }];\n}\n\nlet jsonString = rawText.substring(start, end).replace(/\\n/g, ' ').trim();\n\ntry {\n  const bookList = JSON.parse(jsonString);\n  let combinedHtml = \"\";\n\n  // Building the one large HTML block\n  bookList.forEach(book => {\n    combinedHtml += `\n      <div style=\"background: rgba(255, 255, 255, 0.07); margin: 20px 0; padding: 20px; border-left: 5px solid #d4af37; border-radius: 8px;\">\n        <h3 style=\"margin-top: 0; color: #ffd700;\">✨ ${book.title || 'Untitled'}</h3>\n        <p style=\"line-height: 1.6; color: #f4e4bc;\">${book.description || 'No description available.'}</p>\n        <a href=\"${book.link || '#'}\" style=\"color: #d4af37; font-weight: bold; text-decoration: none;\">Read the full tale →</a>\n      </div>`;\n  });\n\n  // This returns EXACTLY ONE item to Gmail\n  return [{ json: { myHtml: combinedHtml } }];\n\n} catch (e) {\n  return [{ json: { myHtml: \"<p>Error parsing news data.</p>\" } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3760,
+        656
+      ],
+      "id": "d4916b9e-f81c-4ce8-80f2-eb39547c5327",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "myHtml",
+              "renameField": true,
+              "outputFieldName": "finalHtml"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -3552,
+        656
+      ],
+      "id": "51444be5-4487-413f-80c7-4290e48db548",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $input.item.json.content.parts[0].text;\n// This line turns the 'blob' into real data fields\nconst parsedData = JSON.parse(rawText); \nreturn parsedData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3536,
+        -1984
+      ],
+      "id": "5e1699c9-bc78-493a-be65-4dce2cb6c083",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst randomItem = items[Math.floor(Math.random() * items.length)];\nreturn randomItem;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4048,
+        -1456
+      ],
+      "id": "ababda73-c9bf-43ec-89cf-c1969451253a",
+      "name": "Code in JavaScript3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "📖 Book Intake Form": {
+      "main": [
+        [
+          {
+            "node": "📚 Google Books Lookup",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🏛️ Open Library Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📚 Google Books Lookup": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge Book Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🏛️ Open Library Lookup": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge Book Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🔗 Merge Book Sources": {
+      "main": [
+        [
+          {
+            "node": "🖼️ Extract Cover (Free)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🌐 Detect Language (Free)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🖼️ Extract Cover (Free)": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌐 Detect Language (Free)": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🌱 Plant in Airtable Vault": {
+      "main": [
+        [
+          {
+            "node": "📒 Backup to Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "💬 Discord Planting Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Loan Form": {
+      "main": [
+        [
+          {
+            "node": "🔎 Find Book in Vault",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Find Book in Vault": {
+      "main": [
+        [
+          {
+            "node": "🔀 Issue or Return?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Issue or Return?": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📗 Mark as Returned",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📕 Mark as Issued": {
+      "main": [
+        [
+          {
+            "node": "📅 Google Calendar Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "✅ Google Tasks Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "💬 Discord: Book Issued",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📒 Sheets Loan Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌤️ Check Weather": {
+      "main": [
+        [
+          {
+            "node": "🍃 Weather → Genre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🍃 Weather → Genre": {
+      "main": [
+        [
+          {
+            "node": "🌸 Pick a Book for Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌸 Pick a Book for Today": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Daily Overdue Check": {
+      "main": [
+        [
+          {
+            "node": "⚠️ Find Overdue Books",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚠️ Find Overdue Books": {
+      "main": [
+        [
+          {
+            "node": "💬 Discord Overdue Ping",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌅 Daily 8AM Trigger": {
+      "main": [
+        [
+          {
+            "node": "🤖 AI: Genre + Plant Spirit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Book Search Form": {
+      "main": [
+        [
+          {
+            "node": "🔎 Search in Vault",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📁 Google Drive PDF Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Search in Vault": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📁 Google Drive PDF Search": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🏁 Find Completed Books": {
+      "main": [
+        [
+          {
+            "node": "✅ Mark as Posted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Book Request Form": {
+      "main": [
+        [
+          {
+            "node": "🔎 Check If Book Available",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Check If Book Available": {
+      "main": [
+        [
+          {
+            "node": "📝 Build Request Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Build Request Message": {
+      "main": [
+        [
+          {
+            "node": "Wardha Whatsapp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📒 Log Request in Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📧 Gmail: Search Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "🤖 AI: Genre + Plant Spirit2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "🤖 AI: Genre + Plant Spirit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "📕 Mark as Issued",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert: Already Lent Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📗 Mark as Returned": {
+      "main": [
+        [
+          {
+            "node": "📒 Sheets Loan Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "💬 Discord Daily Suggestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "📧 Gmail: Overdue Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "▶️ YouTube Search": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Mark as Posted": {
+      "main": [
+        [
+          {
+            "node": "Summarize1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "📒 Sheets: Log Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 AI: Genre + Plant Spirit": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 AI: Genre + Plant Spirit1": {
+      "main": [
+        [
+          {
+            "node": "📧 Gmail: Water Your Mind",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "💬 Discord Daily Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 AI: Genre + Plant Spirit2": {
+      "main": [
+        [
+          {
+            "node": "📧 Gmail: Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "💬 Discord: Book Completed",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🐙 GitHub Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "▶️ YouTube Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌙 Evening Completed Check": {
+      "main": [
+        [
+          {
+            "node": "🏁 Find Completed Books",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📒 Sheets Loan Log": {
+      "main": [
+        [
+          {
+            "node": "Wardha Whatsapp2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Daily 9AM acc to Weather": {
+      "main": [
+        [
+          {
+            "node": "🌤️ Check Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Weekly News & Updates": {
+      "main": [
+        [
+          {
+            "node": "Google search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "📅 Google Calendar: Tentative Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google search": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📬 Gmail: Send Literary Digest": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "📬 Gmail: Send Literary Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "🌱 Plant in Airtable Vault",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cad8f8e0-a6f8-4d96-ab41-59a7a60044e4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb78dcf5705edc79d3359d411c532a516251c88d624546d5e56bda18c6ea931f"
+  },
+  "id": "M25bDNquM81jUjQh",
+  "tags": [
+    {
+      "updatedAt": "2026-05-08T15:20:17.142Z",
+      "createdAt": "2026-05-08T15:20:17.142Z",
+      "id": "7wOZjUdZQW1yqdGK",
+      "name": "bibliophile"
+    }
+  ]
+}
