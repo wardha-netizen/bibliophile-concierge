@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌿 Bibliophile Concierge — Workflows & Forms</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #fef6e4; --sand: #f3d2c1; --brown: #6b4226; --tanbrown: #9b7b5a;
+      --gold: #d4a373; --green: #4a7c59; --softgreen: #7a9e7e; --white: #fffaf0;
+    }
+    body {
+      background: linear-gradient(160deg, var(--cream) 0%, #e8f5e9 60%, var(--sand) 100%);
+      font-family: 'Lato', sans-serif;
+      color: var(--brown);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--brown);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(107,66,38,0.25);
+    }
+    .nav-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+      text-decoration: none;
+      padding: 18px 0;
+      margin-right: 32px;
+    }
+    nav a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 20px 16px;
+      transition: color .2s;
+      letter-spacing: .5px;
+    }
+    nav a:hover, nav a.active { color: var(--gold); }
+
+    /* HERO */
+    .page-hero {
+      text-align: center;
+      padding: 56px 24px 40px;
+      background: linear-gradient(160deg, rgba(254,246,228,.96) 0%, rgba(232,245,233,.96) 100%);
+      border-bottom: 2px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a373' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--brown);
+      margin-bottom: 12px;
+    }
+    .page-hero h1 em { color: var(--green); font-style: italic; }
+    .page-hero p {
+      color: var(--tanbrown);
+      font-size: 1.05rem;
+      max-width: 540px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: linear-gradient(135deg,#1a6b3a,#27ae60);
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+      padding:5px 16px;
+      border-radius:999px;
+      margin-bottom:18px;
+      text-decoration:none;
+    }
+    .live-dot {
+      width:7px;height:7px;border-radius:50%;
+      background:#7fffb2;
+      animation:pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)} }
+
+    /* MAIN CONTENT */
+    .content { max-width: 1060px; margin: 0 auto; padding: 56px 24px; }
+
+    /* STATUS BANNER */
+    .status-banner {
+      background: linear-gradient(135deg,#1a3d2b,#2e7d32);
+      color: #fff;
+      border-radius: 16px;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .status-banner .icon { font-size: 32px; }
+    .status-banner p { font-size: 0.9rem; opacity: 0.9; line-height: 1.6; }
+    .status-banner strong { color: #b7ffca; }
+    .status-banner a {
+      color: #7fffb2;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .status-banner a:hover { text-decoration: underline; }
+
+    /* SECTION HEADING */
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--brown);
+      margin-bottom: 6px;
+    }
+    .section-sub {
+      color: var(--tanbrown);
+      font-size: 0.92rem;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .divider {
+      width: 50px; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--softgreen));
+      margin: 10px 0 28px;
+      border-radius: 3px;
+    }
+
+    /* WORKFLOW CARD */
+    .wf-card {
+      background: var(--white);
+      border: 1.5px solid var(--gold);
+      border-radius: 20px;
+      padding: 32px 28px;
+      margin-bottom: 32px;
+      box-shadow: 0 6px 24px rgba(107,66,38,0.09);
+    }
+    .wf-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .wf-icon {
+      width: 60px; height: 60px; flex-shrink: 0;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+    }
+    .c1 { background: linear-gradient(135deg,#fff3e0,#ffe0b2); }
+    .c2 { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); }
+    .c3 { background: linear-gradient(135deg,#e3f2fd,#bbdefb); }
+    .c4 { background: linear-gradient(135deg,#f3e5f5,#e1bee7); }
+
+    .wf-card-title { flex: 1; }
+    .wf-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--softgreen);
+      margin-bottom: 4px;
+    }
+    .wf-card-title h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--brown);
+      margin-bottom: 6px;
+    }
+    .wf-card-title p {
+      font-size: 0.88rem;
+      color: var(--tanbrown);
+      line-height: 1.6;
+    }
+
+    /* FORM URL BLOCK */
+    .url-block {
+      background: linear-gradient(135deg, rgba(74,124,89,0.06), rgba(255,250,240,0.8));
+      border: 1.5px solid var(--green);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .url-block-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    .url-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .url-text {
+      flex: 1;
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: var(--brown);
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 9px 14px;
+      word-break: break-all;
+      min-width: 0;
+    }
+    .copy-btn {
+      flex-shrink: 0;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { opacity: 0.85; }
+    .copy-btn.copied { background: #27ae60; }
+    .open-btn {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold), #c8923e);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      white-space: nowrap;
+      transition: opacity .2s;
+    }
+    .open-btn:hover { opacity: 0.85; }
+
+    /* WEBHOOK URL (secondary) */
+    .webhook-block {
+      background: rgba(107,66,38,0.04);
+      border: 1px solid var(--gold);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .webhook-block .url-block-label { color: var(--tanbrown); }
+
+    /* TRIGGER INFO TABLE */
+    .trigger-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      margin-top: 4px;
+    }
+    .trigger-table th {
+      text-align: left;
+      color: var(--tanbrown);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--gold);
+      font-weight: 700;
+    }
+    .trigger-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(212,163,115,0.25);
+      color: var(--brown);
+      vertical-align: top;
+    }
+    .trigger-table tr:last-child td { border-bottom: none; }
+    .trigger-table td:first-child { width: 180px; color: var(--tanbrown); font-size: 0.8rem; }
+    .badge {
+      display: inline-block;
+      background: var(--cream);
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--brown);
+      margin: 2px 2px 2px 0;
+    }
+
+    /* QR PLACEHOLDER */
+    .qr-hint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--cream);
+      border: 1px dashed var(--gold);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: var(--tanbrown);
+      margin-top: 14px;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 36px 24px;
+      background: var(--brown);
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+    }
+    footer strong { color: var(--gold); }
+    footer a { color: var(--softgreen); text-decoration: none; }
+
+    @media(max-width:600px) {
+      .url-row { flex-direction: column; align-items: stretch; }
+      .copy-btn, .open-btn { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">🌿 Bibliophile Concierge</a>
+  <a href="index.html">Home</a>
+  <a href="workflows.html" class="active">Workflows</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="https://github.com/wardha-netizen/bibliophile-concierge" target="_blank" rel="noopener">GitHub</a>
+</nav>
+
+<!-- HERO -->
+<div class="page-hero">
+  <a href="https://n8n-production-a7830.up.railway.app/workflow/M25bDNquM81jUjQh" target="_blank" rel="noopener" class="live-pill">
+    <span class="live-dot"></span> Live on Railway
+  </a>
+  <h1>Workflow <em>Forms &amp; Links</em></h1>
+  <p>All four sub-flow entry points — intake forms, webhook URLs, and field references — in one place. Bookmark the form links to use your library.</p>
+</div>
+
+<div class="content">
+
+  <!-- STATUS BANNER -->
+  <div class="status-banner">
+    <div class="icon">⚡</div>
+    <div>
+      <p><strong>Combined Workflow ID: M25bDNquM81jUjQh</strong><br/>
+      All four sub-flows live in one n8n workflow on Railway Cloud. The forms below are the entry points for each sub-flow. Make sure the workflow is set to <strong>Active</strong> in n8n for all URLs to respond. <a href="https://n8n-production-a7830.up.railway.app/workflow/M25bDNquM81jUjQh" target="_blank">Open in n8n →</a></p>
+    </div>
+  </div>
+
+  <!-- ══ SUB-FLOW 1 ══ -->
+  <div class="wf-card">
+    <div class="wf-card-header">
+      <div class="wf-icon c1">📖</div>
+      <div class="wf-card-title">
+        <div class="wf-label">Sub-Flow 1 · Acquisition</div>
+        <h3>Multilingual Librarian — Book Intake Form</h3>
+        <p>Add a new book to the library in English, Urdu, or Arabic. AI detects the language, assigns a genre &amp; plant spirit, fetches the cover, and saves to Airtable + Google Sheets.</p>
+      </div>
+    </div>
+
+    <div class="url-block">
+      <div class="url-block-label">🌐 Public Form URL — share this with your team</div>
+      <div class="url-row">
+        <span class="url-text" id="url-form-1">https://n8n-production-a7830.up.railway.app/form/6b4f9f6a-6d9f-4c2d-8764-332547cc6f00</span>
+        <button class="copy-btn" onclick="copyUrl('url-form-1',this)">📋 Copy</button>
+        <a href="https://n8n-production-a7830.up.railway.app/form/6b4f9f6a-6d9f-4c2d-8764-332547cc6f00" target="_blank" rel="noopener" class="open-btn">↗ Open Form</a>
+      </div>
+    </div>
+
+    <div class="webhook-block">
+      <div class="url-block-label">🔗 Webhook URL — for programmatic POST requests</div>
+      <div class="url-row">
+        <span class="url-text" id="url-wh-1">https://n8n-production-a7830.up.railway.app/webhook/6b4f9f6a-6d9f-4c2d-8764-332547cc6f00</span>
+        <button class="copy-btn" onclick="copyUrl('url-wh-1',this)">📋 Copy</button>
+      </div>
+    </div>
+
+    <table class="trigger-table">
+      <thead><tr><th>Form Field</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td>Book Title</td><td><span class="badge">Required</span> Works in English, Urdu, Arabic</td></tr>
+        <tr><td>Author (optional)</td><td>Text — fetched from Google Books if left blank</td></tr>
+        <tr><td>Notes / Quote</td><td>Textarea — stored in Airtable Notes field</td></tr>
+        <tr><td>Owner / Shelf</td><td><span class="badge">Dropdown</span> Main Garden · Member 1 · Member 2 · Member 3</td></tr>
+      </tbody>
+    </table>
+
+    <div class="qr-hint">💡 <strong>What happens next:</strong> Google Books + Open Library fetch metadata → Groq AI assigns genre &amp; plant spirit → cover image fetched → record saved to Airtable (apptGlLDt9VHCE9ey) + Google Sheets → Discord notification sent.</div>
+  </div>
+
+  <!-- ══ SUB-FLOW 2 ══ -->
+  <div class="wf-card">
+    <div class="wf-card-header">
+      <div class="wf-icon c2">📊</div>
+      <div class="wf-card-title">
+        <div class="wf-label">Sub-Flow 2 · Inventory</div>
+        <h3>Loan Manager — Issue or Return Form</h3>
+        <p>Issue a book to a borrower or mark it as returned. Updates Airtable lending status, creates a Google Calendar reminder, and sends a Gmail overdue alert when due.</p>
+      </div>
+    </div>
+
+    <div class="url-block">
+      <div class="url-block-label">🌐 Public Form URL — share this with your team</div>
+      <div class="url-row">
+        <span class="url-text" id="url-form-2">https://n8n-production-a7830.up.railway.app/form/ff3c257e-b451-4071-9cc9-1a72ed65c511</span>
+        <button class="copy-btn" onclick="copyUrl('url-form-2',this)">📋 Copy</button>
+        <a href="https://n8n-production-a7830.up.railway.app/form/ff3c257e-b451-4071-9cc9-1a72ed65c511" target="_blank" rel="noopener" class="open-btn">↗ Open Form</a>
+      </div>
+    </div>
+
+    <div class="webhook-block">
+      <div class="url-block-label">🔗 Webhook URL — for programmatic POST requests</div>
+      <div class="url-row">
+        <span class="url-text" id="url-wh-2">https://n8n-production-a7830.up.railway.app/webhook/ff3c257e-b451-4071-9cc9-1a72ed65c511</span>
+        <button class="copy-btn" onclick="copyUrl('url-wh-2',this)">📋 Copy</button>
+      </div>
+    </div>
+
+    <table class="trigger-table">
+      <thead><tr><th>Form Field</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td>Action</td><td><span class="badge">Dropdown</span> Issue · Return</td></tr>
+        <tr><td>Book Title</td><td>Must match title in Airtable exactly</td></tr>
+        <tr><td>Borrower Name</td><td>Name of team member borrowing the book</td></tr>
+        <tr><td>Due Date</td><td>Date — used for Google Calendar reminder</td></tr>
+      </tbody>
+    </table>
+
+    <div class="qr-hint">💡 <strong>Also runs automatically:</strong> Daily 9AM cron checks Karachi weather via OpenWeatherMap → picks a matching genre → Discord suggestion. Daily overdue check fires Gmail alerts for books past their due date.</div>
+  </div>
+
+  <!-- ══ SUB-FLOW 3 ══ -->
+  <div class="wf-card">
+    <div class="wf-card-header">
+      <div class="wf-icon c3">🔍</div>
+      <div class="wf-card-title">
+        <div class="wf-label">Sub-Flow 3 · Engagement</div>
+        <h3>Semantic Search — Search Your Library</h3>
+        <p>Search any quote, character, or topic across your entire Airtable vault and Google Drive PDFs. Groq AI ranks and summarizes the matches and emails the results instantly.</p>
+      </div>
+    </div>
+
+    <div class="url-block">
+      <div class="url-block-label">🌐 Public Form URL — share this with your team</div>
+      <div class="url-row">
+        <span class="url-text" id="url-form-3">https://n8n-production-a7830.up.railway.app/form/fd79b2ae-06be-4762-9e7a-beaa417e16ca</span>
+        <button class="copy-btn" onclick="copyUrl('url-form-3',this)">📋 Copy</button>
+        <a href="https://n8n-production-a7830.up.railway.app/form/fd79b2ae-06be-4762-9e7a-beaa417e16ca" target="_blank" rel="noopener" class="open-btn">↗ Open Form</a>
+      </div>
+    </div>
+
+    <div class="webhook-block">
+      <div class="url-block-label">🔗 Webhook URL — for programmatic POST requests</div>
+      <div class="url-row">
+        <span class="url-text" id="url-wh-3">https://n8n-production-a7830.up.railway.app/webhook/fd79b2ae-06be-4762-9e7a-beaa417e16ca</span>
+        <button class="copy-btn" onclick="copyUrl('url-wh-3',this)">📋 Copy</button>
+      </div>
+    </div>
+
+    <table class="trigger-table">
+      <thead><tr><th>Form Field</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td>Search Query</td><td><span class="badge">Required</span> Any quote, character name, or topic</td></tr>
+        <tr><td>Your Email</td><td>Results are emailed directly to you via Gmail</td></tr>
+      </tbody>
+    </table>
+
+    <div class="qr-hint">💡 <strong>Search pipeline:</strong> Airtable Notes/Summary + Google Drive PDFs searched in parallel → Groq AI merges &amp; ranks results → Gmail delivers formatted results. Also: daily 8AM "Water Your Mind" motivational quote sent via Gmail + Discord, and evening archive of completed books pushed to GitHub.</div>
+  </div>
+
+  <!-- ══ SUB-FLOW 4 ══ -->
+  <div class="wf-card">
+    <div class="wf-card-header">
+      <div class="wf-icon c4">📱</div>
+      <div class="wf-card-title">
+        <div class="wf-label">Sub-Flow 4 · Team Hub</div>
+        <h3>WhatsApp Collaboration — Book Request Form</h3>
+        <p>Request a book from the library. All 3 team members are notified via WhatsApp Cloud API instantly. Requests are logged to Google Sheets and confirmations sent via Gmail.</p>
+      </div>
+    </div>
+
+    <div class="url-block">
+      <div class="url-block-label">🌐 Public Form URL — share this with your team</div>
+      <div class="url-row">
+        <span class="url-text" id="url-form-4">https://n8n-production-a7830.up.railway.app/form/d18624cb-ad72-47e9-aa13-bffc5ddf3fe5</span>
+        <button class="copy-btn" onclick="copyUrl('url-form-4',this)">📋 Copy</button>
+        <a href="https://n8n-production-a7830.up.railway.app/form/d18624cb-ad72-47e9-aa13-bffc5ddf3fe5" target="_blank" rel="noopener" class="open-btn">↗ Open Form</a>
+      </div>
+    </div>
+
+    <div class="webhook-block">
+      <div class="url-block-label">🔗 Webhook URL — for programmatic POST requests</div>
+      <div class="url-row">
+        <span class="url-text" id="url-wh-4">https://n8n-production-a7830.up.railway.app/webhook/d18624cb-ad72-47e9-aa13-bffc5ddf3fe5</span>
+        <button class="copy-btn" onclick="copyUrl('url-wh-4',this)">📋 Copy</button>
+      </div>
+    </div>
+
+    <table class="trigger-table">
+      <thead><tr><th>Form Field</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td>Book Title</td><td><span class="badge">Required</span> Title of the book you want to borrow</td></tr>
+        <tr><td>Requester Name</td><td>Your name — included in WhatsApp notification</td></tr>
+        <tr><td>Requester Phone</td><td>For return notification via WhatsApp</td></tr>
+        <tr><td>Notes</td><td>Optional — urgency or any message to the team</td></tr>
+      </tbody>
+    </table>
+
+    <div class="qr-hint">💡 <strong>What happens next:</strong> Airtable checked for availability → message built → WhatsApp sent to all 3 team members simultaneously → request logged in Google Sheets → Gmail confirmation to requester. Daily 9AM digest also goes to all members.</div>
+  </div>
+
+  <!-- QUICK REFERENCE TABLE -->
+  <h2 class="section-heading" style="margin-top:16px;">Quick Reference</h2>
+  <div class="divider"></div>
+  <div style="overflow-x:auto;">
+    <table class="trigger-table" style="background:var(--white);border-radius:16px;padding:0;border:1.5px solid var(--gold);box-shadow:0 4px 16px rgba(107,66,38,.08);">
+      <thead>
+        <tr style="background:var(--brown);">
+          <th style="color:var(--gold);padding:14px 16px;border-radius:14px 0 0 0;">Sub-Flow</th>
+          <th style="color:var(--gold);padding:14px 16px;">Purpose</th>
+          <th style="color:var(--gold);padding:14px 16px;">Trigger</th>
+          <th style="color:var(--gold);padding:14px 16px;border-radius:0 14px 0 0;">Webhook ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:12px 16px;font-weight:700;">📖 Acquisition</td>
+          <td style="padding:12px 16px;">Add new books</td>
+          <td style="padding:12px 16px;"><span class="badge">Form</span></td>
+          <td style="padding:12px 16px;font-family:monospace;font-size:0.76rem;">6b4f9f6a-…-332547cc6f00</td>
+        </tr>
+        <tr style="background:rgba(212,163,115,0.07);">
+          <td style="padding:12px 16px;font-weight:700;">📊 Inventory</td>
+          <td style="padding:12px 16px;">Issue / return books</td>
+          <td style="padding:12px 16px;"><span class="badge">Form</span> <span class="badge">Cron</span></td>
+          <td style="padding:12px 16px;font-family:monospace;font-size:0.76rem;">ff3c257e-…-1a72ed65c511</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 16px;font-weight:700;">🔍 Engagement</td>
+          <td style="padding:12px 16px;">Search &amp; archive</td>
+          <td style="padding:12px 16px;"><span class="badge">Form</span> <span class="badge">Cron</span></td>
+          <td style="padding:12px 16px;font-family:monospace;font-size:0.76rem;">fd79b2ae-…-beaa417e16ca</td>
+        </tr>
+        <tr style="background:rgba(212,163,115,0.07);">
+          <td style="padding:12px 16px;font-weight:700;">📱 Team Hub</td>
+          <td style="padding:12px 16px;">Book requests via WhatsApp</td>
+          <td style="padding:12px 16px;"><span class="badge">Form</span></td>
+          <td style="padding:12px 16px;font-family:monospace;font-size:0.76rem;">d18624cb-…-bffc5ddf3fe5</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <p style="font-size:1.3rem;margin-bottom:6px;">🌷</p>
+  <p><strong>Bibliophile Concierge</strong> — Enchanted Library Management System</p>
+  <p style="margin-top:8px;">
+    <a href="index.html">Home</a> &nbsp;·&nbsp;
+    <a href="architecture.html">Architecture</a> &nbsp;·&nbsp;
+    <a href="https://github.com/wardha-netizen/bibliophile-concierge">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://n8n-production-a7830.up.railway.app/workflow/M25bDNquM81jUjQh">Railway n8n</a>
+  </p>
+  <p style="margin-top:10px;font-size:11px;opacity:0.5;">University Project · Automation &amp; AI · 2025</p>
+</footer>
+
+<script>
+  function copyUrl(id, btn) {
+    const text = document.getElementById(id).textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = '✅ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
