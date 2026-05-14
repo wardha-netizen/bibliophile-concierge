@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌿 Bibliophile Concierge — System Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #fef6e4; --sand: #f3d2c1; --brown: #6b4226; --tanbrown: #9b7b5a;
+      --gold: #d4a373; --green: #4a7c59; --softgreen: #7a9e7e; --white: #fffaf0;
+    }
+    body {
+      background: linear-gradient(160deg, var(--cream) 0%, #e8f5e9 60%, var(--sand) 100%);
+      font-family: 'Lato', sans-serif;
+      color: var(--brown);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--brown);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(107,66,38,0.25);
+    }
+    .nav-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+      text-decoration: none;
+      padding: 18px 0;
+      margin-right: 32px;
+    }
+    nav a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 20px 16px;
+      transition: color .2s;
+      letter-spacing: .5px;
+    }
+    nav a:hover, nav a.active { color: var(--gold); }
+
+    /* PAGE HERO */
+    .page-hero {
+      text-align: center;
+      padding: 56px 24px 40px;
+      background: linear-gradient(160deg, rgba(254,246,228,.96) 0%, rgba(232,245,233,.96) 100%);
+      border-bottom: 2px solid var(--gold);
+      position: relative;
+    }
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      color: var(--brown);
+      margin-bottom: 12px;
+    }
+    .page-hero p { color: var(--tanbrown); font-size: 1rem; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+
+    /* CONTENT SECTIONS */
+    .content { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+    
+    .workflow-card {
+      background: var(--white);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .workflow-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--green);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .workflow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .step {
+      background: #fdfaf5;
+      border: 1px dashed var(--tanbrown);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .tech-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .tech-pill {
+      background: var(--brown);
+      color: var(--gold);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    footer { text-align: center; padding: 40px; color: var(--tanbrown); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-brand">🌿 Bibliophile Concierge</a>
+    <a href="index.html">Showcase</a>
+    <a href="architecture.html" class="active">Architecture</a>
+  </nav>
+
+  <header class="page-hero">
+    <h1>System <em>Architecture</em></h1>
+    <p>A deep dive into the automated workflows and cloud infrastructure powering the Bibliophile Concierge library management ecosystem.</p>
+  </header>
+
+  <main class="content">
+
+    <section class="workflow-card">
+      <h2>📖 Multilingual Book Acquisition</h2>
+      <p>Automates the intake of new library additions using intelligent metadata enrichment and language detection.</p>
+      <div class="workflow-steps">
+        <div class="step"><strong>Trigger:</strong> n8n Form Intake</div>
+        <div class="step"><strong>Enrichment:</strong> Google Books API</div>
+        <div class="step"><strong>Fallback:</strong> Open Library Search</div>
+        <div class="step"><strong>Logic:</strong> JS Language Detection</div>
+      </div>
+      <div class="tech-grid">
+        <span class="tech-pill">n8n</span>
+        <span class="tech-pill">Google Books API</span>
+        <span class="tech-pill">Open Library</span>
+        <span class="tech-pill">Airtable</span>
+      </div>
+    </section>
+
+    <section class="workflow-card">
+      <h2>🔄 Loan & Return Manager</h2>
+      <p>Coordinates the physical lending process, ensuring real-time updates across all database mirrors.</p>
+      <div class="workflow-steps">
+        <div class="step"><strong>Logic:</strong> Switch (Issue vs Return)</div>
+        <div class="step"><strong>Primary:</strong> Airtable Transaction</div>
+        <div class="step"><strong>Backup:</strong> Google Sheets Sync</div>
+        <div class="step"><strong>Alert:</strong> Discord Notification</div>
+      </div>
+      <div class="tech-grid">
+        <span class="tech-pill">Airtable</span>
+        <span class="tech-pill">Google Sheets</span>
+        <span class="tech-pill">Discord Webhooks</span>
+      </div>
+    </section>
+
+    <section class="workflow-card">
+      <h2>🔍 Engagement & Semantic Search</h2>
+      <p>Utilizes advanced AI to help users find books based on themes, mood, or specific literary interest.</p>
+      <div class="workflow-steps">
+        <div class="step"><strong>AI Engine:</strong> Groq (Llama 3.3)</div>
+        <div class="step"><strong>Context:</strong> Airtable Vault Data</div>
+        <div class="step"><strong>Output:</strong> Personalized Suggestion</div>
+      </div>
+      <div class="tech-grid">
+        <span class="tech-pill">Groq AI</span>
+        <span class="tech-pill">Llama 3.3 70B</span>
+        <span class="tech-pill">Airtable API</span>
+      </div>
+    </section>
+
+    <section class="workflow-card">
+      <h2>💬 WhatsApp Team Hub</h2>
+      <p>The central nervous system for team communication, providing weather-based library alerts and task reminders.</p>
+      <div class="workflow-steps">
+        <div class="step"><strong>External Data:</strong> OpenWeatherMap</div>
+        <div class="step"><strong>Comms:</strong> WhatsApp Cloud API</div>
+        <div class="step"><strong>Reminders:</strong> Google Calendar Sync</div>
+      </div>
+      <div class="tech-grid">
+        <span class="tech-pill">WhatsApp Cloud API</span>
+        <span class="tech-pill">OpenWeatherMap</span>
+        <span class="tech-pill">Google Calendar</span>
+      </div>
+    </section>
+
+    <section class="workflow-card" style="background: #e8f5e9; border-color: var(--green);">
+      <h2 style="color: var(--brown);">☁️ Infrastructure & DevOps</h2>
+      <p>Hosted and orchestrated using modern cloud practices for high availability and redundancy.</p>
+      <div class="workflow-steps">
+        <div class="step"><strong>Hosting:</strong> Railway Cloud</div>
+        <div class="step"><strong>Source Control:</strong> GitHub (Automated CI)</div>
+        <div class="step"><strong>Orchestration:</strong> Self-hosted n8n Instance</div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Bibliophile Concierge &bull; Software Engineering Semester Project</p>
+    <p>Designed with 🌿 for modern readers.</p>
+  </footer>
+
+</body>
+</html>
